@@ -208,7 +208,7 @@
 
         <!-- Main Text Area -->
         <div class="flex-grow bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-            <textarea id="text-input" class="w-full h-[50vh] md:h-full flex-grow p-5 resize-none outline-none text-gray-700 text-lg leading-relaxed placeholder-gray-400" placeholder="Upload an AO3 .epub file, a Google Doc .txt file, or type story text here... (Saved automatically!)"></textarea>
+            <textarea id="text-input" class="w-full h-[50vh] md:h-full flex-grow p-5 resize-none outline-none text-gray-700 text-lg leading-relaxed placeholder-gray-400" placeholder="Upload an AO3 .epub file, a Google Doc .txt file, or type story text here... (Watch-compatible!)"></textarea>
         </div>
     </main>
 
@@ -260,6 +260,9 @@
         </div>
     </footer>
 
+    <!-- Hidden audio element used to anchor Media Session controls for watches & lock screens -->
+    <audio id="media-anchor" preload="none"></audio>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const smartDialogueToggle = document.getElementById('smart-dialogue-toggle');
@@ -273,6 +276,7 @@
             const aiInsightsBtn = document.getElementById('ai-insights-btn');
             const aiInsightsPanel = document.getElementById('ai-insights-panel');
             const speedButtons = document.querySelectorAll('.speed-btn');
+            const mediaAnchor = document.getElementById('media-anchor');
             
             let isPlaying = false;
             let currentSpeed = 1.0;
@@ -288,6 +292,67 @@
                 localStorage.setItem('storyweaver_saved_text', textInput.value);
                 document.getElementById('status-text').innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Saved`;
             });
+
+            // Setup Smartwatch & Lock Screen Media Session Controls
+            function updateMediaSessionMetadata() {
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title: 'StoryWeaver Audiobook',
+                        artist: 'AI Reader',
+                        album: 'Fanfiction & Stories',
+                        artwork: [
+                            { src: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=512&h=512&fit=crop', sizes: '512x512', type: 'image/jpeg' }
+                        ]
+                    });
+
+                    navigator.mediaSession.setActionHandler('play', () => {
+                        if (!isPlaying) togglePlayState();
+                    });
+
+                    navigator.mediaSession.setActionHandler('pause', () => {
+                        if (isPlaying) togglePlayState();
+                    });
+
+                    navigator.mediaSession.setActionHandler('seekbackward', () => {
+                        // Handle skip back
+                    });
+
+                    navigator.mediaSession.setActionHandler('seekforward', () => {
+                        // Handle skip forward
+                    });
+                }
+            }
+
+            function togglePlayState() {
+                const text = textInput.value.trim();
+                if (!text) return;
+
+                isPlaying = !isPlaying;
+                
+                if (isPlaying) {
+                    playIcon.classList.remove('fa-play');
+                    playIcon.classList.add('fa-pause');
+                    playIcon.classList.remove('ml-1');
+                    document.getElementById('status-text').innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Reading`;
+                    document.getElementById('progress-fill').style.width = '35%';
+                    document.getElementById('current-progress').innerText = '1';
+                    document.getElementById('total-chunks').innerText = '3';
+                    
+                    // Activate media session stream handler
+                    if ('mediaSession' in navigator) {
+                        navigator.mediaSession.playbackState = 'playing';
+                    }
+                } else {
+                    playIcon.classList.remove('fa-pause');
+                    playIcon.classList.add('fa-play');
+                    playIcon.classList.add('ml-1');
+                    document.getElementById('status-text').innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Paused`;
+                    
+                    if ('mediaSession' in navigator) {
+                        navigator.mediaSession.playbackState = 'paused';
+                    }
+                }
+            }
 
             // Smart dialogue visibility toggle
             if (smartDialogueToggle) {
@@ -352,25 +417,8 @@
 
             if (playBtn) {
                 playBtn.addEventListener('click', () => {
-                    const text = textInput.value.trim();
-                    if (!text) return;
-
-                    isPlaying = !isPlaying;
-                    
-                    if (isPlaying) {
-                        playIcon.classList.remove('fa-play');
-                        playIcon.classList.add('fa-pause');
-                        playIcon.classList.remove('ml-1');
-                        document.getElementById('status-text').innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Reading`;
-                        document.getElementById('progress-fill').style.width = '35%';
-                        document.getElementById('current-progress').innerText = '1';
-                        document.getElementById('total-chunks').innerText = '3';
-                    } else {
-                        playIcon.classList.remove('fa-pause');
-                        playIcon.classList.add('fa-play');
-                        playIcon.classList.add('ml-1');
-                        document.getElementById('status-text').innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Paused`;
-                    }
+                    updateMediaSessionMetadata();
+                    togglePlayState();
                 });
             }
 
