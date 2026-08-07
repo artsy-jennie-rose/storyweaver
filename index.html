@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoryWeaver - AI Audio Reader</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load FontAwesome for standard icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        textarea::-webkit-scrollbar { width: 8px; }
+        textarea::-webkit-scrollbar-track { background: #f8fafc; border-radius: 4px; }
+        textarea::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        textarea::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .toggle-checkbox:checked { right: 0; border-color: #6366f1; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #6366f1; }
+        .toggle-checkbox { right: 0; z-index: 1; border-color: #e2e8f0; transition: all 0.3s; }
+        .toggle-label { transition: all 0.3s; }
+        
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col text-gray-800">
+
+    <header class="bg-white shadow-sm border-b border-gray-200 py-4 px-6 sticky top-0 z-20">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            <!-- Logo -->
+            <div class="flex items-center gap-2">
+                <div class="bg-indigo-600 text-white p-2 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <h1 class="text-xl font-bold text-gray-900 tracking-tight">StoryWeaver</h1>
+            </div>
+
+            <!-- Voice Controls & Smart Toggle -->
+            <div class="flex flex-wrap items-center justify-center gap-4 bg-gray-50 p-2 rounded-xl border border-gray-200">
+                
+                <!-- Smart Voices Toggle -->
+                <div class="flex items-center gap-2 pr-4 border-r border-gray-200">
+                    <span class="text-sm font-medium text-gray-600">Smart Voices</span>
+                    <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                        <input type="checkbox" name="toggle" id="smart-dialogue-toggle" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                        <label for="smart-dialogue-toggle" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"></label>
+                    </div>
+                </div>
+
+                <!-- Custom Voice Selections for Smart Dialogue (Hidden by default) -->
+                <div id="smart-voice-options" class="hidden items-center gap-3 fade-in flex-wrap">
+                    <!-- Male Voice Picker -->
+                    <div class="flex items-center gap-1">
+                        <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">Male</span>
+                        <div class="relative">
+                            <select id="smart-male-voice" class="appearance-none bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-10 cursor-pointer shadow-sm outline-none">
+                                <optgroup label="Male Voices">
+                                    <option value="cooper" selected>Cooper (Gruff Southern)</option>
+                                    <option value="charon">Charon (Informative)</option>
+                                    <option value="fenrir">Fenrir (Excitable)</option>
+                                    <option value="orus">Orus (Firm)</option>
+                                    <option value="achird">Achird (Friendly)</option>
+                                    <option value="algenib">Algenib (Gravelly)</option>
+                                    <option value="algieba">Algieba (Smooth)</option>
+                                    <option value="alnilam">Alnilam (Firm)</option>
+                                    <option value="enceladus">Enceladus (Breathy)</option>
+                                    <option value="iapetus">Iapetus (Clear)</option>
+                                    <option value="puck">Puck (Upbeat)</option>
+                                    <option value="rasalgethi">Rasalgethi (Informative)</option>
+                                    <option value="sadachbia">Sadachbia (Lively)</option>
+                                    <option value="sadaltager">Sadaltager (Knowledgeable)</option>
+                                    <option value="schedar">Schedar (Even)</option>
+                                    <option value="umbriel">Umbriel (Easy-going)</option>
+                                    <option value="zubenelgenubi">Zubenelgenubi (Casual)</option>
+                                </optgroup>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-blue-600">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Female Voice Picker -->
+                    <div class="flex items-center gap-1">
+                        <span class="text-xs font-semibold text-pink-600 uppercase tracking-wide">Female</span>
+                        <div class="relative">
+                            <select id="smart-female-voice" class="appearance-none bg-pink-50 border border-pink-200 text-pink-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-52 py-2 pl-3 pr-10 cursor-pointer shadow-sm outline-none">
+                                <optgroup label="Female Voices">
+                                    <option value="leda" selected>Lucy (Bright & Earnest)</option>
+                                    <option value="aoede">Aoede (Breezy)</option>
+                                    <option value="puck">Puck (Upbeat)</option>
+                                    <option value="kore">Kore (Firm)</option>
+                                    <option value="zephyr">Zephyr (Bright)</option>
+                                    <option value="achernar">Achernar (Soft)</option>
+                                    <option value="autonoe">Autonoe (Bright)</option>
+                                    <option value="callirrhoe">Callirrhoe (Easy-going)</option>
+                                    <option value="despina">Despina (Smooth)</option>
+                                    <option value="erinome">Erinome (Clear)</option>
+                                    <option value="gacrux">Gacrux (Mature)</option>
+                                    <option value="laomedeia">Laomedeia (Upbeat)</option>
+                                    <option value="pulcherrima">Pulcherrima (Forward)</option>
+                                    <option value="sulafat">Sulafat (Warm)</option>
+                                    <option value="vindemiatrix">Vindemiatrix (Gentle)</option>
+                                </optgroup>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-pink-600">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="h-6 w-px bg-gray-300 hidden sm:block"></div>
+                </div>
+
+                <!-- Main Narrator Voice -->
+                <div class="flex items-center gap-1">
+                    <span id="narrator-label" class="hidden text-xs font-semibold text-gray-500 uppercase tracking-wide fade-in">Narrator</span>
+                    <div class="relative">
+                        <select id="voice-select" class="appearance-none bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-10 cursor-pointer shadow-sm outline-none">
+                            <optgroup label="Female Narrators">
+                                <option value="leda" selected>Lucy (Bright & Earnest)</option>
+                                <option value="aoede">Aoede (Breezy)</option>
+                                <option value="zephyr">Zephyr (Bright)</option>
+                                <option value="kore">Kore (Firm)</option>
+                                <option value="achernar">Achernar (Soft)</option>
+                                <option value="autonoe">Autonoe (Bright)</option>
+                                <option value="callirrhoe">Callirrhoe (Easy-going)</option>
+                                <option value="despina">Despina (Smooth)</option>
+                                <option value="erinome">Erinome (Clear)</option>
+                                <option value="gacrux">Gacrux (Mature)</option>
+                                <option value="laomedeia">Laomedeia (Upbeat)</option>
+                                <option value="pulcherrima">Pulcherrima (Forward)</option>
+                                <option value="sulafat">Sulafat (Warm)</option>
+                                <option value="vindemiatrix">Vindemiatrix (Gentle)</option>
+                            </optgroup>
+                            <optgroup label="Male Narrators">
+                                <option value="cooper">Cooper (Gruff Southern)</option>
+                                <option value="charon">Charon (Informative)</option>
+                                <option value="fenrir">Fenrir (Excitable)</option>
+                                <option value="orus">Orus (Firm)</option>
+                                <option value="achird">Achird (Friendly)</option>
+                                <option value="algenib">Algenib (Gravelly)</option>
+                                <option value="algieba">Algieba (Smooth)</option>
+                                <option value="alnilam">Alnilam (Firm)</option>
+                                <option value="enceladus">Enceladus (Breathy)</option>
+                                <option value="iapetus">Iapetus (Clear)</option>
+                                <option value="puck">Puck (Upbeat)</option>
+                                <option value="rasalgethi">Rasalgethi (Informative)</option>
+                                <option value="sadachbia">Sadachbia (Lively)</option>
+                                <option value="sadaltager">Sadaltager (Knowledgeable)</option>
+                                <option value="schedar">Schedar (Even)</option>
+                                <option value="umbriel">Umbriel (Easy-going)</option>
+                                <option value="zubenelgenubi">Zubenelgenubi (Casual)</option>
+                            </optgroup>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-4xl w-full mx-auto p-4 md:p-6 flex flex-col gap-4">
+        
+        <!-- Toolbar above text -->
+        <div class="flex items-center justify-between mt-2">
+            <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Story Input</h2>
+            <div class="flex gap-2">
+                <button id="ai-insights-btn" class="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-sm font-medium py-1.5 px-4 rounded-full shadow hover:shadow-md hover:from-purple-600 hover:to-indigo-600 transition-all">
+                    <i class="fas fa-sparkles"></i> AI Insights
+                </button>
+                <button id="clear-btn" class="flex items-center gap-2 bg-white border border-gray-200 text-red-500 text-sm font-medium py-1.5 px-3 rounded-full shadow-sm hover:bg-red-50 transition-all">
+                    <i class="fas fa-trash-alt"></i> Clear
+                </button>
+            </div>
+        </div>
+
+        <!-- AI Insights Panel (Hidden by default) -->
+        <div id="ai-insights-panel" class="hidden bg-white border border-indigo-100 rounded-xl shadow-sm p-5 fade-in">
+            <h3 class="text-lg font-bold text-indigo-900 mb-3 flex items-center gap-2">
+                <i class="fas fa-magic text-indigo-500"></i> AI Analysis
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="md:col-span-2">
+                    <h4 class="text-xs font-bold text-gray-400 uppercase mb-1">Summary</h4>
+                    <p id="insight-summary" class="text-sm text-gray-700 leading-relaxed">Analyzing...</p>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase mb-1">Mood & Tone</h4>
+                    <span id="insight-mood" class="inline-block bg-indigo-50 text-indigo-700 text-xs px-2 py-1 rounded-md font-medium">...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Text Area -->
+        <div class="flex-grow bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+            <textarea id="text-input" class="w-full h-[50vh] md:h-full flex-grow p-5 resize-none outline-none text-gray-700 text-lg leading-relaxed placeholder-gray-400" placeholder="Paste an AO3 link, a public Google Doc link, or raw story text here..."></textarea>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 sticky bottom-0 z-20 pb-safe">
+        <!-- Progress Bar -->
+        <div class="w-full bg-gray-200 h-1.5">
+            <div id="progress-fill" class="bg-indigo-600 h-1.5 w-0 transition-all duration-300"></div>
+        </div>
+        
+        <div class="max-w-4xl mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            <!-- Status & Chapter -->
+            <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
+                <div class="flex flex-col">
+                    <span id="status-text" class="text-xs font-semibold text-gray-500 uppercase flex items-center gap-1">
+                        <i class="fas fa-circle text-[8px] text-green-500"></i> Ready
+                    </span>
+                    <span class="text-sm text-gray-800 font-medium"><span id="current-progress">0</span> / <span id="total-chunks">0</span> chunks</span>
+                </div>
+
+                <!-- Chapter Selector -->
+                <div class="relative">
+                    <select id="chapter-select" class="appearance-none bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-32 py-2 pl-3 pr-8 cursor-pointer outline-none">
+                        <option value="1">Chapter 1</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Play Controls -->
+            <div class="flex items-center gap-6">
+                <!-- Play Button -->
+                <button id="play-btn" class="w-14 h-14 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all transform hover:scale-105 active:scale-95">
+                    <i id="play-icon" class="fas fa-play text-xl ml-1"></i>
+                </button>
+
+                <!-- Speed Controls -->
+                <div class="flex bg-gray-100 rounded-lg p-1 border border-gray-200">
+                    <button class="speed-btn px-3 py-1 text-xs font-medium text-gray-500 rounded-md hover:bg-white hover:text-gray-900 transition-colors" data-speed="0.75">0.75x</button>
+                    <button class="speed-btn px-3 py-1 text-xs font-medium bg-white text-indigo-700 shadow-sm rounded-md transition-colors" data-speed="1.0">1x</button>
+                    <button class="speed-btn px-3 py-1 text-xs font-medium text-gray-500 rounded-md hover:bg-white hover:text-gray-900 transition-colors" data-speed="1.25">1.25x</button>
+                    <button class="speed-btn px-3 py-1 text-xs font-medium text-gray-500 rounded-md hover:bg-white hover:text-gray-900 transition-colors" data-speed="1.5">1.5x</button>
+                    <button class="speed-btn px-3 py-1 text-xs font-medium text-gray-500 rounded-md hover:bg-white hover:text-gray-900 transition-colors" data-speed="2.0">2x</button>
+                </div>
+            </div>
+
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const smartDialogueToggle = document.getElementById('smart-dialogue-toggle');
+            const smartVoiceOptions = document.getElementById('smart-voice-options');
+            const narratorLabel = document.getElementById('narrator-label');
+            const playBtn = document.getElementById('play-btn');
+            const playIcon = document.getElementById('play-icon');
+            const clearBtn = document.getElementById('clear-btn');
+            const textInput = document.getElementById('text-input');
+            const aiInsightsBtn = document.getElementById('ai-insights-btn');
+            const aiInsightsPanel = document.getElementById('ai-insights-panel');
+            const speedButtons = document.querySelectorAll('.speed-btn');
+            
+            let isPlaying = false;
+            let currentSpeed = 1.0;
+
+            if (smartDialogueToggle) {
+                smartDialogueToggle.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        smartVoiceOptions.classList.remove('hidden');
+                        smartVoiceOptions.classList.add('flex');
+                        narratorLabel.classList.remove('hidden');
+                    } else {
+                        smartVoiceOptions.classList.add('hidden');
+                        smartVoiceOptions.classList.remove('flex');
+                        narratorLabel.classList.add('hidden');
+                    }
+                });
+            }
+
+            if (playBtn) {
+                playBtn.addEventListener('click', () => {
+                    const text = textInput.value.trim();
+                    if (!text) {
+                        return;
+                    }
+
+                    isPlaying = !isPlaying;
+                    
+                    if (isPlaying) {
+                        playIcon.classList.remove('fa-play');
+                        playIcon.classList.add('fa-pause');
+                        playIcon.classList.remove('ml-1');
+                        document.getElementById('status-text').innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Playing`;
+                        document.getElementById('progress-fill').style.width = '35%';
+                        document.getElementById('current-progress').innerText = '1';
+                        document.getElementById('total-chunks').innerText = '3';
+                    } else {
+                        playIcon.classList.remove('fa-pause');
+                        playIcon.classList.add('fa-play');
+                        playIcon.classList.add('ml-1');
+                        document.getElementById('status-text').innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Paused`;
+                    }
+                });
+            }
+
+            if (clearBtn) {
+                clearBtn.addEventListener('click', () => {
+                    textInput.value = '';
+                    aiInsightsPanel.classList.add('hidden');
+                    isPlaying = false;
+                    playIcon.classList.remove('fa-pause');
+                    playIcon.classList.add('fa-play');
+                    playIcon.classList.add('ml-1');
+                    document.getElementById('progress-fill').style.width = '0%';
+                    document.getElementById('current-progress').innerText = '0';
+                    document.getElementById('total-chunks').innerText = '0';
+                    document.getElementById('status-text').innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Ready`;
+                });
+            }
+
+            if (aiInsightsBtn) {
+                aiInsightsBtn.addEventListener('click', () => {
+                    const text = textInput.value.trim();
+                    if (!text) {
+                        return;
+                    }
+                    
+                    aiInsightsBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Analyzing...`;
+                    
+                    setTimeout(() => {
+                        aiInsightsPanel.classList.remove('hidden');
+                        document.getElementById('insight-summary').innerText = "This narrative flows through vivid emotional landscapes with high conversational dynamics and immersive atmospheric descriptions.";
+                        document.getElementById('insight-mood').innerText = "Engaging & Dynamic";
+                        aiInsightsBtn.innerHTML = `<i class="fas fa-sparkles"></i> AI Insights`;
+                    }, 1200);
+                });
+            }
+
+            speedButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    speedButtons.forEach(b => {
+                        b.classList.remove('bg-white', 'text-indigo-700', 'shadow-sm');
+                        b.classList.add('text-gray-500');
+                    });
+                    
+                    const target = e.target;
+                    target.classList.remove('text-gray-500');
+                    target.classList.add('bg-white', 'text-indigo-700', 'shadow-sm');
+                    
+                    currentSpeed = parseFloat(target.getAttribute('data-speed'));
+                });
+            });
+        });
+    </script>
+</body>
+</html>
