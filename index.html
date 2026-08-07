@@ -208,7 +208,7 @@
 
         <!-- Main Text Area -->
         <div class="flex-grow bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-            <textarea id="text-input" class="w-full h-[50vh] md:h-full flex-grow p-5 resize-none outline-none text-gray-700 text-lg leading-relaxed placeholder-gray-400" placeholder="Upload an AO3 .epub file, a Google Doc .txt file, or type story text here... (Watch-compatible!)"></textarea>
+            <textarea id="text-input" class="w-full h-[50vh] md:h-full flex-grow p-5 resize-none outline-none text-gray-700 text-lg leading-relaxed placeholder-gray-400" placeholder="Upload an AO3 .epub file, a Google Doc .txt file, or type story text here..."></textarea>
         </div>
     </main>
 
@@ -276,7 +276,6 @@
             const aiInsightsBtn = document.getElementById('ai-insights-btn');
             const aiInsightsPanel = document.getElementById('ai-insights-panel');
             const speedButtons = document.querySelectorAll('.speed-btn');
-            const mediaAnchor = document.getElementById('media-anchor');
             
             let isPlaying = false;
             let currentSpeed = 1.0;
@@ -312,14 +311,6 @@
                     navigator.mediaSession.setActionHandler('pause', () => {
                         if (isPlaying) togglePlayState();
                     });
-
-                    navigator.mediaSession.setActionHandler('seekbackward', () => {
-                        // Handle skip back
-                    });
-
-                    navigator.mediaSession.setActionHandler('seekforward', () => {
-                        // Handle skip forward
-                    });
                 }
             }
 
@@ -338,7 +329,6 @@
                     document.getElementById('current-progress').innerText = '1';
                     document.getElementById('total-chunks').innerText = '3';
                     
-                    // Activate media session stream handler
                     if ('mediaSession' in navigator) {
                         navigator.mediaSession.playbackState = 'playing';
                     }
@@ -389,9 +379,21 @@
                                 
                                 for (let item of spineItems) {
                                     const spineChapter = await book.load(item.href);
-                                    let tempDiv = document.createElement('div');
-                                    tempDiv.innerHTML = spineChapter;
-                                    fullStoryText += tempDiv.innerText + "\n\n";
+                                    let textContent = "";
+                                    if (typeof spineChapter === 'string') {
+                                        let tempDiv = document.createElement('div');
+                                        tempDiv.innerHTML = spineChapter;
+                                        textContent = tempDiv.textContent || tempDiv.innerText || "";
+                                    } else if (spineChapter && typeof spineChapter.documentElement !== 'undefined') {
+                                        textContent = spineChapter.documentElement.textContent || "";
+                                    } else if (spineChapter) {
+                                        let tempDiv = document.createElement('div');
+                                        tempDiv.appendChild(spineChapter.cloneNode(true));
+                                        textContent = tempDiv.textContent || tempDiv.innerText || "";
+                                    }
+                                    if (textContent.trim().length > 0) {
+                                        fullStoryText += textContent.trim() + "\n\n";
+                                    }
                                 }
                                 
                                 textInput.value = fullStoryText.trim();
