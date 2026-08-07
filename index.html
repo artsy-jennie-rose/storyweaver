@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StoryWeaver - AI Audio Reader</title>
-    <!-- Load Tailwind CSS -->
+    <!-- STREAMING_CHUNK:Loading Tailwind CSS and FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load FontAwesome for standard icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -32,6 +31,7 @@
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col text-gray-800">
 
+    <!-- STREAMING_CHUNK:Rendering header layout -->
     <header class="bg-white shadow-sm border-b border-gray-200 py-4 px-6 sticky top-0 z-20">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             
@@ -55,14 +55,14 @@
                     </div>
                 </div>
 
-                <!-- Custom Voice Selections for Smart Dialogue (Hidden by default) -->
+                <!-- Custom Voice Selections for Smart Dialogue -->
                 <div id="smart-voice-options" class="hidden items-center gap-3 fade-in flex-wrap">
                     <!-- Male Voice Picker -->
                     <div class="flex items-center gap-1">
                         <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">Male</span>
                         <div class="relative">
-                            <select id="smart-male-voice" class="appearance-none bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-44 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
-                                <option value="cooper">Cooper (Southern)</option>
+                            <select id="smart-male-voice" class="appearance-none bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-52 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
+                                <option value="cooper">Cooper (Gruff Southern)</option>
                                 <option value="charon">Charon (Informative)</option>
                                 <option value="fenrir" selected>Fenrir (Excitable)</option>
                                 <option value="orus">Orus (Firm)</option>
@@ -79,6 +79,9 @@
                                 <option value="schedar">Schedar (Even)</option>
                                 <option value="umbriel">Umbriel (Easy-going)</option>
                                 <option value="zubenelgenubi">Zubenelgenubi (Casual)</option>
+                                <option value="achernar">Achernar (Soft)</option>
+                                <option value="alnilam">Alnilam (Firm)</option>
+                                <option value="gacrux">Gacrux (Mature)</option>
                             </select>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-blue-600">
                                 <i class="fas fa-chevron-down text-xs"></i>
@@ -90,8 +93,8 @@
                     <div class="flex items-center gap-1">
                         <span class="text-xs font-semibold text-pink-600 uppercase tracking-wide">Female</span>
                         <div class="relative">
-                            <select id="smart-female-voice" class="appearance-none bg-pink-50 border border-pink-200 text-pink-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-44 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
-                                <option value="leda" selected>Lucy (Fallout)</option>
+                            <select id="smart-female-voice" class="appearance-none bg-pink-50 border border-pink-200 text-pink-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-52 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
+                                <option value="leda" selected>Lucy (Bright & Earnest - Fallout)</option>
                                 <option value="aoede">Aoede (Breezy)</option>
                                 <option value="kore">Kore (Firm)</option>
                                 <option value="zephyr">Zephyr (Bright)</option>
@@ -105,6 +108,8 @@
                                 <option value="pulcherrima">Pulcherrima (Forward)</option>
                                 <option value="sulafat">Sulafat (Warm)</option>
                                 <option value="vindemiatrix">Vindemiatrix (Gentle)</option>
+                                <option value="algieba">Algieba (Smooth)</option>
+                                <option value="puck">Puck (Upbeat)</option>
                             </select>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-pink-600">
                                 <i class="fas fa-chevron-down text-xs"></i>
@@ -118,9 +123,9 @@
                 <div class="flex items-center gap-1">
                     <span id="narrator-label" class="hidden text-xs font-semibold text-gray-500 uppercase tracking-wide fade-in">Narrator</span>
                     <div class="relative">
-                        <select id="voice-select" class="appearance-none bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-44 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
+                        <select id="voice-select" class="appearance-none bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-52 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
                             <optgroup label="Female Voices">
-                                <option value="leda" selected>Lucy (Fallout)</option>
+                                <option value="leda" selected>Lucy (Bright & Earnest - Fallout)</option>
                                 <option value="aoede">Aoede (Breezy)</option>
                                 <option value="zephyr">Zephyr (Bright)</option>
                                 <option value="kore">Kore (Firm)</option>
@@ -136,7 +141,7 @@
                                 <option value="vindemiatrix">Vindemiatrix (Gentle)</option>
                             </optgroup>
                             <optgroup label="Male Voices">
-                                <option value="cooper">Cooper (Southern)</option>
+                                <option value="cooper">Cooper (Gruff Southern)</option>
                                 <option value="charon">Charon (Informative)</option>
                                 <option value="fenrir">Fenrir (Excitable)</option>
                                 <option value="orus">Orus (Firm)</option>
@@ -165,6 +170,7 @@
         </div>
     </header>
 
+    <!-- STREAMING_CHUNK:Rendering main text body and AI toolbar -->
     <main class="flex-grow max-w-4xl w-full mx-auto p-4 md:p-6 flex flex-col gap-4">
         
         <!-- Toolbar above text -->
@@ -180,7 +186,7 @@
             </div>
         </div>
 
-        <!-- AI Insights Panel (Hidden by default) -->
+        <!-- AI Insights Panel -->
         <div id="ai-insights-panel" class="hidden bg-white border border-indigo-100 rounded-xl shadow-sm p-5 fade-in">
             <h3 class="text-lg font-bold text-indigo-900 mb-3 flex items-center gap-2">
                 <i class="fas fa-magic text-indigo-500"></i> AI Analysis
@@ -199,10 +205,11 @@
 
         <!-- Main Text Area -->
         <div class="flex-grow bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-            <textarea id="text-input" class="w-full h-[50vh] md:h-full flex-grow p-5 resize-none outline-none text-gray-700 text-lg leading-relaxed placeholder-gray-400" placeholder="Paste an AO3 link, Google Doc link, or raw story text here... (Links will automatically fetch story content!)"></textarea>
+            <textarea id="text-input" class="w-full h-[50vh] md:h-full flex-grow p-5 resize-none outline-none text-gray-700 text-lg leading-relaxed placeholder-gray-400" placeholder="Paste an AO3 link, Google Doc link, or raw story text here... (Links auto-fetch content!)"></textarea>
         </div>
     </main>
 
+    <!-- STREAMING_CHUNK:Rendering sticky footer playback controls -->
     <footer class="bg-white border-t border-gray-200 sticky bottom-0 z-20 pb-safe">
         <!-- Progress Bar -->
         <div class="w-full bg-gray-200 h-1.5">
@@ -251,6 +258,7 @@
         </div>
     </footer>
 
+    <!-- STREAMING_CHUNK:Initializing client interaction logic and scrapers -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const smartDialogueToggle = document.getElementById('smart-dialogue-toggle');
@@ -282,13 +290,39 @@
                 });
             }
 
-            // Automatic Link Scraper on Blur or Enter
+            // Automatic Link Scraper & Google Doc Parser on Blur
             textInput.addEventListener('blur', async () => {
-                const val = textInput.value.trim();
+                let val = textInput.value.trim();
                 if (val.startsWith('http://') || val.startsWith('https://')) {
+                    
+                    // Handle Google Docs Link automatically via export endpoint
+                    if (val.includes('docs.google.com')) {
+                        const match = val.match(/\/document\/d\/([a-zA-Z0-9-_]+)/);
+                        if (match && match[1]) {
+                            const docId = match[1];
+                            const exportUrl = `https://docs.google.com/document/d/${docId}/export?format=txt`;
+                            textInput.value = "Fetching Google Doc text...";
+                            document.getElementById('status-text').innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Importing Doc`;
+                            
+                            try {
+                                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(exportUrl)}`;
+                                const response = await fetch(proxyUrl);
+                                const data = await response.json();
+                                if (data && data.contents) {
+                                    textInput.value = data.contents;
+                                    document.getElementById('status-text').innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Google Doc Loaded!`;
+                                    return;
+                                }
+                            } catch (e) {
+                                // Fallback if proxy fails
+                            }
+                        }
+                    }
+
+                    // Standard Web Page / AO3 Scraper
                     textInput.value = "Fetching webpage content...";
+                    document.getElementById('status-text').innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Scraping URL`;
                     try {
-                        // Use a public CORS proxy to fetch the external page text
                         const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(val)}`;
                         const response = await fetch(proxyUrl);
                         const data = await response.json();
@@ -296,10 +330,7 @@
                             const parser = new DOMParser();
                             const doc = parser.parseFromString(data.contents, 'text/html');
                             
-                            // Target specific main content if AO3 or general blog/doc
                             let storyDiv = doc.querySelector('#workskin') || doc.querySelector('.userstuff') || doc.querySelector('article') || doc.body;
-                            
-                            // Remove script/style noise
                             doc.querySelectorAll('script, style, nav, header, footer').forEach(el => el.remove());
                             
                             const extractedText = storyDiv.innerText.trim();
@@ -308,7 +339,7 @@
                                 document.getElementById('status-text').innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Page Loaded!`;
                             } else {
                                 textInput.value = val;
-                                document.getElementById('status-text').innerHTML = `<i class="fas fa-circle text-[8px] text-yellow-500"></i> Could not auto-parse link contents.`;
+                                document.getElementById('status-text').innerHTML = `<i class="fas fa-circle text-[8px] text-yellow-500"></i> Loaded raw link text.`;
                             }
                         }
                     } catch (err) {
@@ -391,3 +422,4 @@
     </script>
 </body>
 </html>
+```eof
