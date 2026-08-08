@@ -512,23 +512,12 @@
                 });
             }
 
-            // Expand contractions into full words so speech synthesizers don't spell them out
-            function expandContractions(text) {
-                return text
-                    .replace(/\b(they|we|I|he|she|you|it|that|who|there)['’]ll\b/gi, '$1 will')
-                    .replace(/\b(they|we|I|he|she|you|it)['’]re\b/gi, '$1 are')
-                    .replace(/\b(I|you|we|they|he|she|it)['’]m\b/gi, '$1 am')
-                    .replace(/\b(I|you|we|they|he|she|it)['’]ve\b/gi, '$1 have')
-                    .replace(/\b(I|you|he|she|we|they)['’]d\b/gi, '$1 would')
-                    .replace(/\bcan['’]t\b/gi, 'cannot')
-                    .replace(/\bwon['’]t\b/gi, 'will not')
-                    .replace(/\bshan['’]t\b/gi, 'shall not')
-                    .replace(/\bain['’]t\b/gi, 'is not')
-                    .replace(/\b([a-zA-Z]+)n['’]t\b/gi, '$1 not');
+            // Strip apostrophes entirely for the speech engine text so it reads contractions as complete continuous words
+            function stripApostrophesForSpeech(text) {
+                return text.replace(/['’]/g, '');
             }
 
             function parseDialogueSegments(fullText) {
-                const expandedText = expandContractions(fullText);
                 const regex = /([^"“”'‘’]+)|(["“”'‘’][^"“”'‘’]+["“”'‘’])/g;
                 let match;
                 let segments = [];
@@ -536,7 +525,7 @@
                 const femalePronouns = /\b(she|her|hers|woman|girl|lady|madam|mother|sister|daughter|aunt|queen|princess)\b/i;
                 let lastGender = 'unknown';
 
-                while ((match = regex.exec(expandedText)) !== null) {
+                while ((match = regex.exec(fullText)) !== null) {
                     let startIndex = match.index;
                     let rawText = match[0];
                     
@@ -546,11 +535,12 @@
                         if (maleHints > femaleHints) lastGender = 'male';
                         else if (femaleHints > maleHints) lastGender = 'female';
                         
-                        segments.push({ text: rawText, type: 'narrator', startIndex: startIndex, rawLength: rawText.length });
+                        let cleanSpeechText = stripApostrophesForSpeech(rawText);
+                        segments.push({ text: cleanSpeechText, type: 'narrator', startIndex: startIndex, rawLength: rawText.length });
                     } else if (match[2]) {
                         let peekGender = lastGender; 
                         let peekIndex = regex.lastIndex;
-                        let peekText = expandedText.substring(peekIndex, peekIndex + 80);
+                        let peekText = fullText.substring(peekIndex, peekIndex + 80);
                         
                         if (/^\s*[,.]?\s*(she|her|the woman|the girl|the lady|mom|mother)/i.test(peekText)) {
                             peekGender = 'female';
@@ -562,18 +552,21 @@
                             }
                         }
                         
+                        let cleanSpeechText = stripApostrophesForSpeech(rawText);
+                        
                         if (rawText.length < 4 && rawText.match(/^['‘’]/)) {
-                             segments.push({ text: rawText, type: 'narrator', startIndex: startIndex, rawLength: rawText.length });
+                             segments.push({ text: cleanSpeechText, type: 'narrator', startIndex: startIndex, rawLength: rawText.length });
                         } else {
-                             segments.push({ text: rawText, type: peekGender, startIndex: startIndex, rawLength: rawText.length });
+                             segments.push({ text: cleanSpeechText, type: peekGender, startIndex: startIndex, rawLength: rawText.length });
                         }
                         
                         lastGender = peekGender;
                     }
                 }
                 
-                if (segments.length === 0 && expandedText.trim().length > 0) {
-                    segments.push({ text: expandedText, type: 'narrator', startIndex: 0, rawLength: expandedText.length });
+                if (segments.length === 0 && fullText.trim().length > 0) {
+                    let cleanFull = stripApostrophesForSpeech(fullText);
+                    segments.push({ text: cleanFull, type: 'narrator', startIndex: 0, rawLength: fullText.length });
                 }
                 
                 return segments;
