@@ -512,15 +512,43 @@
                 });
             }
 
-            // Completely strips out quotation marks and normalizes apostrophes for clean speech without voicing punctuation
-            function cleanForSpeech(text) {
+            // Ultimate Phonetic Expansion Dictionary for Contractions & Quote Stripping
+            function phoneticPreprocess(text) {
                 return text
-                    .replace(/[“”"„‟«»]/g, '') // Remove all double quote marks so the engine never says "quote"
-                    .replace(/[‘’`ʼ]/g, "'") // Standardize single apostrophes
-                    .replace(/([a-zA-Z])['](t|s|re|ll|ve|m|d)\b/gi, '$1$2'); // Clean contractions
+                    // Remove all quotation marks entirely so speech engine never says "quote"
+                    .replace(/[“”"„‟«»]/g, '')
+                    // Expand all contractions phonetically so speech engine never spells out letters like 'll or n't
+                    .replace(/\b(they|we|I|he|she|you|it|that|who|there)['’]ll\b/gi, '$1 will')
+                    .replace(/\b(they|we|I|he|she|you|it)['’]re\b/gi, '$1 are')
+                    .replace(/\b(I|you|we|they|he|she|it)['’]m\b/gi, '$1 am')
+                    .replace(/\b(I|you|we|they|he|she|it)['’]ve\b/gi, '$1 have')
+                    .replace(/\b(I|you|he|she|we|they)['’]d\b/gi, '$1 would')
+                    .replace(/\bcan['’]t\b/gi, 'cannot')
+                    .replace(/\bwon['’]t\b/gi, 'will not')
+                    .replace(/\bshan['’]t\b/gi, 'shall not')
+                    .replace(/\bain['’]t\b/gi, 'is not')
+                    .replace(/\bdon['’]t\b/gi, 'do not')
+                    .replace(/\bdoesn['’]t\b/gi, 'does not')
+                    .replace(/\bdidn['’]t\b/gi, 'did not')
+                    .replace(/\bisn['’]t\b/gi, 'is not')
+                    .replace(/\baren['’]t\b/gi, 'are not')
+                    .replace(/\bwasn['’]t\b/gi, 'was not')
+                    .replace(/\bweren['’]t\b/gi, 'were not')
+                    .replace(/\bhasn['’]t\b/gi, 'has not')
+                    .replace(/\bhaven['’]t\b/gi, 'have not')
+                    .replace(/\bhadn['’]t\b/gi, 'had not')
+                    .replace(/\bwon['’]t\b/gi, 'will not')
+                    .replace(/\bwouldn['’]t\b/gi, 'would not')
+                    .replace(/\bshouldn['’]t\b/gi, 'should not')
+                    .replace(/\bcouldn['’]t\b/gi, 'could not')
+                    .replace(/\bmightn['’]t\b/gi, 'might not')
+                    .replace(/\bmustn['’]t\b/gi, 'must not')
+                    // Clean any remaining apostrophes safely as spaces
+                    .replace(/[‘’`ʼ]/g, ' ');
             }
 
             function parseDialogueSegments(fullText) {
+                // Regex to split dialogue blocks while ignoring quotation marks
                 const regex = /([^"“”'‘’]+)|(["“”'‘’][^"“”'‘’]+["“”'‘’])/g;
                 let match;
                 let segments = [];
@@ -538,7 +566,7 @@
                         if (maleHints > femaleHints) lastGender = 'male';
                         else if (femaleHints > maleHints) lastGender = 'female';
                         
-                        let speechText = cleanForSpeech(rawText);
+                        let speechText = phoneticPreprocess(rawText);
                         segments.push({ text: speechText, type: 'narrator', startIndex: startIndex, rawLength: rawText.length });
                     } else if (match[2]) {
                         let peekGender = lastGender; 
@@ -555,15 +583,14 @@
                             }
                         }
                         
-                        let speechText = cleanForSpeech(rawText);
-                        
+                        let speechText = phoneticPreprocess(rawText);
                         segments.push({ text: speechText, type: peekGender, startIndex: startIndex, rawLength: rawText.length });
                         lastGender = peekGender;
                     }
                 }
                 
                 if (segments.length === 0 && fullText.trim().length > 0) {
-                    let speechText = cleanForSpeech(fullText);
+                    let speechText = phoneticPreprocess(fullText);
                     segments.push({ text: speechText, type: 'narrator', startIndex: 0, rawLength: fullText.length });
                 }
                 
