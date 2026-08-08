@@ -512,15 +512,30 @@
                 });
             }
 
-            // Expand contractions into full words and strip quotation marks completely
+            // Full Dictionary Expansion to guarantee speech engines pronounce contractions properly
             function cleanForSpeech(text) {
                 return text
                     .replace(/[“”"„‟«»]/g, '') // Remove quotation marks
-                    .replace(/\b(they|we|I|he|she|you|it|that|who|there)['’]ll\b/gi, '$1 will')
-                    .replace(/\b(they|we|I|he|she|you|it)['’]re\b/gi, '$1 are')
-                    .replace(/\b(I|you|we|they|he|she|it)['’]m\b/gi, '$1 am')
-                    .replace(/\b(I|you|we|they|he|she|it)['’]ve\b/gi, '$1 have')
-                    .replace(/\b(I|you|he|she|we|they)['’]d\b/gi, '$1 would')
+                    .replace(/\bthey['’]ll\b/gi, 'they will')
+                    .replace(/\bwe['’]ll\b/gi, 'we will')
+                    .replace(/\bI['’]ll\b/gi, 'I will')
+                    .replace(/\bhe['’]ll\b/gi, 'he will')
+                    .replace(/\bshe['’]ll\b/gi, 'she will')
+                    .replace(/\byou['’]ll\b/gi, 'you will')
+                    .replace(/\bit['’]ll\b/gi, 'it will')
+                    .replace(/\bthey['’]re\b/gi, 'they are')
+                    .replace(/\bwe['’]re\b/gi, 'we are')
+                    .replace(/\byou['’]re\b/gi, 'you are')
+                    .replace(/\bI['’]m\b/gi, 'I am')
+                    .replace(/\bthey['’]ve\b/gi, 'they have')
+                    .replace(/\bwe['’]ve\b/gi, 'we have')
+                    .replace(/\byou['’]ve\b/gi, 'you have')
+                    .replace(/\bI['’]ve\b/gi, 'I have')
+                    .replace(/\bhe['’]d\b/gi, 'he would')
+                    .replace(/\bshe['’]d\b/gi, 'she would')
+                    .replace(/\bthey['’]d\b/gi, 'they would')
+                    .replace(/\bwe['’]d\b/gi, 'we would')
+                    .replace(/\bI['’]d\b/gi, 'I would')
                     .replace(/\bcan['’]t\b/gi, 'cannot')
                     .replace(/\bwon['’]t\b/gi, 'will not')
                     .replace(/\bshan['’]t\b/gi, 'shall not')
@@ -537,6 +552,8 @@
                     .replace(/\bwouldn['’]t\b/gi, 'would not')
                     .replace(/\bshouldn['’]t\b/gi, 'should not')
                     .replace(/\bcouldn['’]t\b/gi, 'could not')
+                    .replace(/\bmightn['’]t\b/gi, 'might not')
+                    .replace(/\bmustn['’]t\b/gi, 'must not')
                     .replace(/\bit['’]s\b/gi, 'it is')
                     .replace(/\bthat['’]s\b/gi, 'that is')
                     .replace(/\bwhat['’]s\b/gi, 'what is')
@@ -546,8 +563,7 @@
                     .replace(/\bwhy['’]s\b/gi, 'why is')
                     .replace(/\bhow['’]s\b/gi, 'how is')
                     .replace(/\blet['’]s\b/gi, 'let us')
-                    .replace(/([a-zA-Z])['’](t|s)\b/gi, '$1$2')
-                    .replace(/[‘’`ʼ']/g, '');
+                    .replace(/[‘’`ʼ']/g, ''); // Remove any remaining apostrophes
             }
 
             function parseDialogueSegments(fullText) {
