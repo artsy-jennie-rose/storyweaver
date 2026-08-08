@@ -23,6 +23,7 @@
             from { opacity: 0; transform: translateY(-5px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        input[type=range] { accent-color: #4f46e5; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between">
@@ -47,7 +48,7 @@
 
                 <div id="smart-voice-options" style="display: none;" class="items-center gap-3 fade-in flex-wrap">
                     <div class="flex items-center gap-1">
-                        <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">Male (Gruff/Deep)</span>
+                        <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">Male (Dialogue)</span>
                         <div class="relative">
                             <select id="smart-male-voice" class="appearance-none bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
                                 <option value="default">Loading Voices...</option>
@@ -59,7 +60,7 @@
                     </div>
                     
                     <div class="flex items-center gap-1">
-                        <span class="text-xs font-semibold text-pink-600 uppercase tracking-wide">Female (Optimistic)</span>
+                        <span class="text-xs font-semibold text-pink-600 uppercase tracking-wide">Female (Dialogue)</span>
                         <div class="relative">
                             <select id="smart-female-voice" class="appearance-none bg-pink-50 border border-pink-200 text-pink-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
                                 <option value="default">Loading Voices...</option>
@@ -83,6 +84,11 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Voice Tuning Button -->
+                <button id="tuning-btn" class="ml-1 w-8 h-8 rounded-full bg-white border border-gray-300 text-gray-500 flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 shadow-sm transition-all" title="Voice Tuning">
+                    <i class="fas fa-sliders-h text-sm"></i>
+                </button>
             </div>
         </div>
     </header>
@@ -161,6 +167,54 @@
         </div>
     </footer>
 
+    <!-- Tuning Modal -->
+    <div id="tuning-modal" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center backdrop-blur-sm fade-in">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+                <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-sliders-h text-indigo-600"></i> Voice Pitch Tuning
+                </h3>
+                <button id="close-tuning-btn" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-5">
+                <p class="text-xs text-gray-500 mb-4">Adjust the pitch of voices to make them deeper (lower) or higher (higher).</p>
+                
+                <!-- Narrator Pitch -->
+                <div class="space-y-1">
+                    <div class="flex justify-between items-center">
+                        <label class="text-sm font-semibold text-gray-700">Narrator Pitch</label>
+                        <span id="pitch-val-narrator" class="text-xs font-medium bg-gray-100 px-2 py-1 rounded text-gray-600">1.0</span>
+                    </div>
+                    <input type="range" id="pitch-narrator" min="0.1" max="2.0" step="0.1" value="1.0" class="w-full cursor-pointer">
+                </div>
+
+                <!-- Male Pitch -->
+                <div class="space-y-1">
+                    <div class="flex justify-between items-center">
+                        <label class="text-sm font-semibold text-blue-700">Male Dialogue Pitch</label>
+                        <span id="pitch-val-male" class="text-xs font-medium bg-blue-50 px-2 py-1 rounded text-blue-700">1.0</span>
+                    </div>
+                    <input type="range" id="pitch-male" min="0.1" max="2.0" step="0.1" value="1.0" class="w-full cursor-pointer">
+                </div>
+
+                <!-- Female Pitch -->
+                <div class="space-y-1">
+                    <div class="flex justify-between items-center">
+                        <label class="text-sm font-semibold text-pink-700">Female Dialogue Pitch</label>
+                        <span id="pitch-val-female" class="text-xs font-medium bg-pink-50 px-2 py-1 rounded text-pink-700">1.0</span>
+                    </div>
+                    <input type="range" id="pitch-female" min="0.1" max="2.0" step="0.1" value="1.0" class="w-full cursor-pointer">
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+                <button id="reset-tuning-btn" class="text-sm font-medium text-gray-500 hover:text-gray-700 mr-4">Reset</button>
+                <button id="done-tuning-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-2 px-6 rounded-lg shadow-sm transition-colors">Done</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <script>
@@ -187,6 +241,20 @@
             const smartVoiceOptions = document.getElementById('smart-voice-options');
             const narratorLabel = document.getElementById('narrator-label');
 
+            // Tuning elements
+            const tuningBtn = document.getElementById('tuning-btn');
+            const tuningModal = document.getElementById('tuning-modal');
+            const closeTuningBtn = document.getElementById('close-tuning-btn');
+            const doneTuningBtn = document.getElementById('done-tuning-btn');
+            const resetTuningBtn = document.getElementById('reset-tuning-btn');
+            
+            const pitchNarrator = document.getElementById('pitch-narrator');
+            const pitchMale = document.getElementById('pitch-male');
+            const pitchFemale = document.getElementById('pitch-female');
+            const pitchValNarrator = document.getElementById('pitch-val-narrator');
+            const pitchValMale = document.getElementById('pitch-val-male');
+            const pitchValFemale = document.getElementById('pitch-val-female');
+
             let isPlaying = false;
             let isPaused = false;
             let cancelForInterrupt = false; 
@@ -199,6 +267,11 @@
             let currentSegmentIndex = 0;
             let currentWordIndexInSegment = 0;
 
+            // Pitch Variables
+            let pNarrator = 1.0;
+            let pMale = 0.85; // Default slightly lower for gruff male
+            let pFemale = 1.15; // Default slightly higher for optimistic female
+
             function loadVoices() {
                 if (!synth) return;
                 let rawVoices = synth.getVoices();
@@ -207,20 +280,19 @@
                     smartMaleVoiceSelect.innerHTML = '';
                     smartFemaleVoiceSelect.innerHTML = '';
                     
-                    // Score and sort voices so the best neural/natural/English voices float to the top
+                    // Filter exclusively for English voices and filter out novelty voices
                     let voices = rawVoices.filter(v => {
+                        let l = v.lang.toLowerCase();
                         let n = v.name.toLowerCase();
-                        return !n.includes("trinoids") && !n.includes("zarvox") && !n.includes("boing") && !n.includes("bubbles") && !n.includes("whisper");
+                        let isEnglish = l.startsWith('en') || n.includes('english') || l.includes('eng');
+                        let isNovelty = n.includes("trinoids") || n.includes("zarvox") || n.includes("boing") || n.includes("bubbles") || n.includes("whisper");
+                        return isEnglish && !isNovelty;
                     }).map(v => {
                         let score = 0;
                         let n = v.name.toLowerCase();
-                        let l = v.lang.toLowerCase();
-                        
-                        if (l.startsWith('en')) score += 200; // Prioritize English
                         if (n.includes('natural') || n.includes('neural')) score += 150;
                         if (n.includes('premium') || n.includes('enhanced')) score += 120;
                         if (n.includes('google') || !v.localService) score += 100;
-                        
                         return { voice: v, score: score };
                     }).sort((a, b) => b.score - a.score);
 
@@ -230,14 +302,13 @@
                     voices.forEach((item) => {
                         let v = item.voice;
                         let n = v.name.toLowerCase();
-                        let vNameStr = `${v.name} (${v.lang})${item.score >= 200 ? ' ⭐' : ''}`;
+                        let vNameStr = `${v.name} (${v.lang})${item.score >= 100 ? ' ✨' : ''}`;
                         
                         const opt1 = document.createElement('option');
                         opt1.value = v.name; opt1.textContent = vNameStr;
                         voiceSelect.appendChild(opt1);
 
-                        // Archetype heuristics for Southern Gruff Man vs Optimistic Young Woman
-                        const isGruffMale = n.includes("david") || n.includes("mark") || n.includes("george") || n.includes("oliver") || n.includes("ryan") || n.includes("stefan") || n.includes("james");
+                        const isGruffMale = n.includes("david") || n.includes("mark") || n.includes("george") || n.includes("oliver") || n.includes("ryan") || n.includes("stefan") || n.includes("james") || n.includes("guy");
                         const isUpbeatFemale = n.includes("samantha") || n.includes("zira") || n.includes("victoria") || n.includes("karen") || n.includes("siri") || n.includes("jenny") || n.includes("aria") || n.includes("ava") || n.includes("emma");
                         
                         const optMale = document.createElement('option');
@@ -268,6 +339,15 @@
             try {
                 const savedText = localStorage.getItem('sw_text');
                 const savedChaps = localStorage.getItem('sw_chaps');
+                
+                const sPN = localStorage.getItem('sw_pitch_n');
+                const sPM = localStorage.getItem('sw_pitch_m');
+                const sPF = localStorage.getItem('sw_pitch_f');
+                
+                if (sPN) { pNarrator = parseFloat(sPN); pitchNarrator.value = pNarrator; pitchValNarrator.innerText = pNarrator.toFixed(1); }
+                if (sPM) { pMale = parseFloat(sPM); pitchMale.value = pMale; pitchValMale.innerText = pMale.toFixed(1); }
+                if (sPF) { pFemale = parseFloat(sPF); pitchFemale.value = pFemale; pitchValFemale.innerText = pFemale.toFixed(1); }
+
                 if (savedChaps) {
                     loadedChapters = JSON.parse(savedChaps);
                     updateChapterDropdown();
@@ -280,6 +360,44 @@
             textInput.addEventListener('input', () => {
                 try { localStorage.setItem('sw_text', textInput.value); } catch(e){}
                 fullPlaybackReset();
+            });
+
+            // Tuning Modal Logic
+            function openTuning() { tuningModal.classList.remove('hidden'); tuningModal.classList.add('flex'); }
+            function closeTuning() { tuningModal.classList.add('hidden'); tuningModal.classList.remove('flex'); }
+            
+            tuningBtn.addEventListener('click', openTuning);
+            closeTuningBtn.addEventListener('click', closeTuning);
+            doneTuningBtn.addEventListener('click', closeTuning);
+            
+            function applyPitchChange() {
+                try {
+                    localStorage.setItem('sw_pitch_n', pNarrator);
+                    localStorage.setItem('sw_pitch_m', pMale);
+                    localStorage.setItem('sw_pitch_f', pFemale);
+                } catch(e){}
+                
+                if (isPlaying) {
+                     cancelForInterrupt = true;
+                     synth.cancel(); 
+                     if(!isPaused) speakNextUtterance(); 
+                }
+            }
+
+            pitchNarrator.addEventListener('input', (e) => { pNarrator = parseFloat(e.target.value); pitchValNarrator.innerText = pNarrator.toFixed(1); });
+            pitchNarrator.addEventListener('change', applyPitchChange);
+            
+            pitchMale.addEventListener('input', (e) => { pMale = parseFloat(e.target.value); pitchValMale.innerText = pMale.toFixed(1); });
+            pitchMale.addEventListener('change', applyPitchChange);
+            
+            pitchFemale.addEventListener('input', (e) => { pFemale = parseFloat(e.target.value); pitchValFemale.innerText = pFemale.toFixed(1); });
+            pitchFemale.addEventListener('change', applyPitchChange);
+
+            resetTuningBtn.addEventListener('click', () => {
+                pNarrator = 1.0; pMale = 0.85; pFemale = 1.15;
+                pitchNarrator.value = 1.0; pitchMale.value = 0.85; pitchFemale.value = 1.15;
+                pitchValNarrator.innerText = "1.0"; pitchValMale.innerText = "0.85"; pitchValFemale.innerText = "1.15";
+                applyPitchChange();
             });
 
             function updateChapterDropdown() {
@@ -487,11 +605,21 @@
                 
                 let selectedVoiceName;
                 if (smartDialogueToggle.checked) {
-                    if (segment.type === 'male') selectedVoiceName = smartMaleVoiceSelect.value;
-                    else if (segment.type === 'female') selectedVoiceName = smartFemaleVoiceSelect.value;
-                    else selectedVoiceName = voiceSelect.value;
+                    if (segment.type === 'male') {
+                        selectedVoiceName = smartMaleVoiceSelect.value;
+                        utter.pitch = pMale;
+                    }
+                    else if (segment.type === 'female') {
+                        selectedVoiceName = smartFemaleVoiceSelect.value;
+                        utter.pitch = pFemale;
+                    }
+                    else {
+                        selectedVoiceName = voiceSelect.value;
+                        utter.pitch = pNarrator;
+                    }
                 } else {
                     selectedVoiceName = voiceSelect.value;
+                    utter.pitch = pNarrator;
                 }
 
                 const voices = synth.getVoices();
