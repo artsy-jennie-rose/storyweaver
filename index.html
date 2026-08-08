@@ -260,7 +260,7 @@
             
             let utteranceQueue = [];
             let currentSegmentIndex = 0;
-            let currentWordIndexInSegment = 0;
+            let currentWordIndex = 0;
 
             let pNarrator = 1.0;
             let pMale = 0.85; 
@@ -514,7 +514,7 @@
 
             function cleanForSpeech(text) {
                 return text
-                    .replace(/[“”"„‟«»]/g, '') 
+                    .replace(/[“”"„‟«»]/g, '')
                     .replace(/\b(they|we|I|he|she|you|it|that|who|there)['’]ll\b/gi, '$1 will')
                     .replace(/\b(they|we|I|he|she|you|it)['’]re\b/gi, '$1 are')
                     .replace(/\b(I|you|we|they|he|she|it)['’]m\b/gi, '$1 am')
@@ -588,14 +588,14 @@
                 return segments;
             }
 
-            function findSegmentAndWordIndex(charIndex, segments) {
+            function getSegmentFromCursor(cursorPos, segments) {
                 for (let i = 0; i < segments.length; i++) {
                     let seg = segments[i];
-                    if (charIndex >= seg.startIndex && charIndex <= seg.startIndex + seg.length) {
-                        return { segmentIndex: i, wordIndexInSegment: Math.min(charIndex - seg.startIndex, seg.text.length) };
+                    if (cursorPos >= seg.startIndex && cursorPos <= seg.startIndex + seg.length) {
+                        return { segmentIndex: i, wordOffset: cursorPos - seg.startIndex };
                     }
                 }
-                return { segmentIndex: 0, wordIndexInSegment: 0 };
+                return { segmentIndex: 0, wordOffset: 0 };
             }
 
             function speakNextUtterance() {
@@ -612,16 +612,15 @@
                 }
 
                 let segment = utteranceQueue[currentSegmentIndex];
-                let offset = currentWordIndexInSegment;
+                let textToSpeak = segment.text.substring(currentWordIndex);
                 
-                if (offset >= segment.text.length) {
+                if (!textToSpeak.trim()) {
                     currentSegmentIndex++;
-                    currentWordIndexInSegment = 0;
+                    currentWordIndex = 0;
                     speakNextUtterance();
                     return;
                 }
 
-                let textToSpeak = segment.text.substring(offset);
                 let utter = new SpeechSynthesisUtterance(textToSpeak);
                 utter.rate = currentSpeed;
                 
@@ -650,30 +649,20 @@
 
                 utter.onboundary = (e) => {
                     if (e.name !== 'word') return;
-                    let actualPosInSegment = offset + e.charIndex;
-                    currentWordIndexInSegment = actualPosInSegment;
-                    let absStart = segment.startIndex + actualPosInSegment;
-                    let len = e.charLength;
-                    if (!len) {
-                        let m = segment.text.substring(actualPosInSegment).match(/^[^\s]+/);
-                        len = m ? m[0].length : 1;
-                    }
-                    
-                    textInput.focus();
-                    if(textInput.setSelectionRange) textInput.setSelectionRange(absStart, absStart + len);
+                    currentWordIndex = currentWordIndex + e.charIndex;
                 };
 
                 utter.onend = () => {
                     if (cancelForInterrupt) { cancelForInterrupt = false; return; }
                     currentSegmentIndex++;
-                    currentWordIndexInSegment = 0;
+                    currentWordIndex = 0;
                     speakNextUtterance();
                 };
                 
                 utter.onerror = () => {
                     if (cancelForInterrupt) { cancelForInterrupt = false; return; }
                     currentSegmentIndex++;
-                    currentWordIndexInSegment = 0;
+                    currentWordIndex = 0;
                     speakNextUtterance();
                 };
 
@@ -690,9 +679,9 @@
                             utteranceQueue = parseDialogueSegments(textInput.value);
                             let cursorPos = textInput.selectionStart;
                             if (cursorPos !== undefined && cursorPos > 0) {
-                                let pos = findSegmentAndWordIndex(cursorPos, utteranceQueue);
-                                currentSegmentIndex = pos.segmentIndex;
-                                currentWordIndexInSegment = pos.wordIndexInSegment;
+                                let target = getSegmentFromCursor(cursorPos, utteranceQueue);
+                                currentSegmentIndex = target.segmentIndex;
+                                currentWordIndex = target.wordOffset;
                             }
 
                             isPaused = false;
@@ -719,12 +708,12 @@
                         
                         let cursorPos = textInput.selectionStart;
                         if (cursorPos !== undefined && cursorPos > 0) {
-                            let pos = findSegmentAndWordIndex(cursorPos, utteranceQueue);
-                            currentSegmentIndex = pos.segmentIndex;
-                            currentWordIndexInSegment = pos.wordIndexInSegment;
+                            let target = getSegmentFromCursor(cursorPos, utteranceQueue);
+                            currentSegmentIndex = target.segmentIndex;
+                            currentWordIndex = target.wordOffset;
                         } else {
                             currentSegmentIndex = 0;
-                            currentWordIndexInSegment = 0;
+                            currentWordIndex = 0;
                         }
 
                         playIcon.className = "fas fa-pause text-xl";
