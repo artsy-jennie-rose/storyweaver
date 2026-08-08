@@ -262,6 +262,40 @@
             let currentSegmentIndex = 0;
             let currentWordIndex = 0;
 
+            // Chrome silently stops firing speech events (no onend/onerror) once a
+            // single utterance runs past ~15s. Periodically nudging pause()/resume()
+            // resets that internal timer. The watchdog is a fallback in case a
+            // browser still gets stuck despite the nudge.
+            let keepAliveTimer = null;
+            let watchdogTimer = null;
+            let lastBoundaryAt = 0;
+
+            function startKeepAlive() {
+                stopKeepAlive();
+                lastBoundaryAt = Date.now();
+                keepAliveTimer = setInterval(() => {
+                    if (synth.speaking && !synth.paused) {
+                        synth.pause();
+                        synth.resume();
+                    }
+                }, 10000);
+                watchdogTimer = setInterval(() => {
+                    if (isPlaying && !isPaused && synth.speaking && Date.now() - lastBoundaryAt > 20000) {
+                        // Genuinely stuck: force it forward rather than hang forever.
+                        cancelForInterrupt = true;
+                        synth.cancel();
+                        currentSegmentIndex++;
+                        currentWordIndex = 0;
+                        speakNextUtterance();
+                    }
+                }, 5000);
+            }
+
+            function stopKeepAlive() {
+                if (keepAliveTimer) { clearInterval(keepAliveTimer); keepAliveTimer = null; }
+                if (watchdogTimer) { clearInterval(watchdogTimer); watchdogTimer = null; }
+            }
+
             let pNarrator = 1.0;
             let pMale = 0.85; 
             let pFemale = 1.15; 
@@ -642,6 +676,7 @@
                 if (!isPlaying || isPaused || currentSegmentIndex >= utteranceQueue.length) {
                     if (currentSegmentIndex >= utteranceQueue.length && utteranceQueue.length > 0) {
                         if (synth) synth.cancel();
+                        stopKeepAlive();
                         isPlaying = false;
                         isPaused = false;
                         playIcon.className = "fas fa-play text-xl ml-1";
@@ -692,10 +727,17 @@
                 const selectedV = voices.find(v => v.name === selectedVoiceName);
                 if (selectedV) utter.voice = selectedV;
 
+                utter.onstart = () => {
+                    // Not every voice fires onboundary, so also mark activity here
+                    // to avoid the watchdog firing on a perfectly healthy long line.
+                    lastBoundaryAt = Date.now();
+                };
+
                 utter.onboundary = (e) => {
                     if (e.name !== 'word') return;
                     // Set (not accumulate) from the fixed utterance start offset.
                     currentWordIndex = utteranceStartIndex + e.charIndex;
+                    lastBoundaryAt = Date.now();
                 };
 
                 utter.onend = () => {
@@ -734,10 +776,12 @@
                             textInput.readOnly = true; 
                             playIcon.className = "fas fa-pause text-xl";
                             statusText.innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Reading`;
+                            startKeepAlive();
                             speakNextUtterance();
                         } else {
                             cancelForInterrupt = true;
                             synth.cancel();
+                            stopKeepAlive();
                             isPaused = true;
                             textInput.readOnly = false; 
                             playIcon.className = "fas fa-play text-xl ml-1";
@@ -764,6 +808,7 @@
 
                         playIcon.className = "fas fa-pause text-xl";
                         statusText.innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Reading`;
+                        startKeepAlive();
                         speakNextUtterance();
                     }
                 });
@@ -772,6 +817,7 @@
             if (clearBtn) {
                 clearBtn.addEventListener('click', () => {
                     if (synth) synth.cancel();
+                    stopKeepAlive();
                     isPlaying = false;
                     isPaused = false;
                     cancelForInterrupt = false;
