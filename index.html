@@ -664,12 +664,22 @@
 
                     if (isPlaying) {
                         if (isPaused) {
+                            // Check if user clicked/highlighted a NEW position while paused
+                            let cursorStart = textInput.selectionStart;
+                            if (cursorStart !== undefined && cursorStart > 0) {
+                                utteranceQueue = parseDialogueSegments(textInput.value);
+                                let pos = findSegmentAndWordIndex(cursorStart, utteranceQueue);
+                                currentSegmentIndex = pos.segmentIndex;
+                                currentWordIndexInSegment = pos.wordIndexInSegment;
+                            }
+
                             isPaused = false;
                             textInput.readOnly = true; 
                             playIcon.className = "fas fa-pause text-xl";
                             statusText.innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Reading`;
                             speakNextUtterance();
                         } else {
+                            // Pause
                             cancelForInterrupt = true;
                             synth.cancel();
                             isPaused = true;
@@ -678,6 +688,7 @@
                             statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-yellow-500"></i> Paused`;
                         }
                     } else {
+                        // Brand new start or start from user highlight/cursor selection
                         if (synth) synth.cancel();
                         isPlaying = true;
                         isPaused = false;
