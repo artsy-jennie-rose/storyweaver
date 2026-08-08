@@ -512,17 +512,39 @@
                 });
             }
 
+            // Universal Phonetic Substitution for Contractions & Quote Stripping
             function cleanForSpeech(text) {
                 return text
-                    .replace(/[“”"„‟«»]/g, '')
+                    .replace(/[“”"„‟«»]/g, '') // Remove quotation marks to stop "quote" announcements
                     .replace(/\b(they|we|I|he|she|you|it|that|who|there)['’]ll\b/gi, '$1 will')
                     .replace(/\b(they|we|I|he|she|you|it)['’]re\b/gi, '$1 are')
                     .replace(/\b(I|you|we|they|he|she|it)['’]m\b/gi, '$1 am')
                     .replace(/\b(I|you|we|they|he|she|it)['’]ve\b/gi, '$1 have')
                     .replace(/\b(I|you|he|she|we|they)['’]d\b/gi, '$1 would')
-                    .replace(/can['’]t\b/gi, 'cannot')
-                    .replace(/won['’]t\b/gi, 'will not')
-                    .replace(/shan['’]t\b/gi, 'shall not')
+                    .replace(/\bcan['’]t\b/gi, 'cannot')
+                    .replace(/\bwon['’]t\b/gi, 'will not')
+                    .replace(/\bshan['’]t\b/gi, 'shall not')
+                    .replace(/\bdon['’]t\b/gi, 'do not')
+                    .replace(/\bdoesn['’]t\b/gi, 'does not')
+                    .replace(/\bdidn['’]t\b/gi, 'did not')
+                    .replace(/\bisn['’]t\b/gi, 'is not')
+                    .replace(/\baren['’]t\b/gi, 'are not')
+                    .replace(/\bwasn['’]t\b/gi, 'was not')
+                    .replace(/\bweren['’]t\b/gi, 'were not')
+                    .replace(/\bhasn['’]t\b/gi, 'has not')
+                    .replace(/\bhaven['’]t\b/gi, 'have not')
+                    .replace(/\bhadn['’]t\b/gi, 'had not')
+                    .replace(/\bwouldn['’]t\b/gi, 'would not')
+                    .replace(/\bshouldn['’]t\b/gi, 'should not')
+                    .replace(/\bcouldn['’]t\b/gi, 'could not')
+                    .replace(/\bit['’]s\b/gi, 'it is')
+                    .replace(/\bthat['’]s\b/gi, 'that is')
+                    .replace(/\bwhat['’]s\b/gi, 'what is')
+                    .replace(/\bwho['’]s\b/gi, 'who is')
+                    .replace(/\bwhere['’]s\b/gi, 'where is')
+                    .replace(/\bwhen['’]s\b/gi, 'when is')
+                    .replace(/\bwhy['’]s\b/gi, 'why is')
+                    .replace(/\bhow['’]s\b/gi, 'how is')
                     .replace(/([a-zA-Z])['’](t|s)\b/gi, '$1$2')
                     .replace(/[‘’`ʼ]/g, ' ');
             }
