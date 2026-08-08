@@ -4,15 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StoryWeaver - AI Audio Reader</title>
-    <!-- Tailwind CSS -->
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)">
-    <!-- JSZip for EPUB Extraction -->
-    <script src="[https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js](https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js)"></script>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        @import url('[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap)');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
         
         textarea::-webkit-scrollbar { width: 8px; }
@@ -200,6 +198,12 @@
         </div>
     </footer>
 
+    <!-- Hidden audio element for smartwatch/lockscreen integration -->
+    <audio id="media-anchor" preload="none"></audio>
+
+    <!-- JSZip Script loaded at bottom of body -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const smartDialogueToggle = document.getElementById('smart-dialogue-toggle');
@@ -226,7 +230,7 @@
             let synth = window.speechSynthesis;
             let currentUtterance = null;
 
-            // Load available system browser voices for real Speech Synthesis
+            // Voice Loading
             function populateVoiceList() {
                 if (!synth) return;
                 const voices = synth.getVoices();
@@ -240,12 +244,13 @@
                     });
                 }
             }
+            
             populateVoiceList();
             if (synth && synth.onvoiceschanged !== undefined) {
                 synth.onvoiceschanged = populateVoiceList;
             }
 
-            // Restore saved session safely
+            // Restore Saved Text
             try {
                 const savedStory = localStorage.getItem('storyweaver_saved_text');
                 const savedChapters = localStorage.getItem('storyweaver_saved_chapters');
@@ -255,22 +260,25 @@
                     rebuildChapterDropdown();
                 }
 
-                if (savedStory && !savedStory.includes('[object XMLDocument]')) {
+                if (savedStory && typeof savedStory === 'string' && !savedStory.includes('[object XMLDocument]')) {
                     textInput.value = savedStory;
+                } else {
+                    localStorage.removeItem('storyweaver_saved_text');
+                    localStorage.removeItem('storyweaver_saved_chapters');
                 }
             } catch (err) {
-                console.warn("Storage reset on init:", err);
-                localStorage.clear();
+                console.warn("Storage reset:", err);
+                try { localStorage.clear(); } catch(e){}
             }
 
-            // Save text state on typing
+            // Auto-Save Text
             textInput.addEventListener('input', () => {
                 try {
                     localStorage.setItem('storyweaver_saved_text', textInput.value);
                 } catch (e) {}
             });
 
-            // Rebuild chapter selector options
+            // Rebuild Dropdown
             function rebuildChapterDropdown() {
                 chapterSelect.innerHTML = '<option value="all">Full Story</option>';
                 if (loadedChapters.length > 0) {
@@ -286,7 +294,7 @@
                 }
             }
 
-            // Chapter Dropdown Switch
+            // Select Chapter
             chapterSelect.addEventListener('change', (e) => {
                 const val = e.target.value;
                 if (val === 'all') {
@@ -304,20 +312,19 @@
                 }
             });
 
-            // EPUB Extractor with JSZip
+            // Extract Chapters from EPUB
             async function extractEpubChapters(file) {
                 if (typeof JSZip === 'undefined') {
-                    throw new Error("JSZip not loaded");
+                    throw new Error("JSZip unavailable");
                 }
                 const zip = await JSZip.loadAsync(file);
                 let chapters = [];
                 let htmlFiles = [];
 
-                // Scan files for chapter content
-                Object.keys(zip.files).forEach(fn => {
-                    const lower = fn.toLowerCase();
-                    if ((lower.endsWith('.html') || lower.endsWith('.xhtml') || lower.endsWith('.htm')) && !lower.includes('nav') && !lower.includes('toc')) {
-                        htmlFiles.push(fn);
+                zip.forEach((relativePath, zipEntry) => {
+                    const lower = relativePath.toLowerCase();
+                    if ((lower.endsWith('.html') || lower.endsWith('.xhtml') || lower.endsWith('.htm')) && !lower.includes('nav.') && !lower.includes('toc.')) {
+                        htmlFiles.push(relativePath);
                     }
                 });
 
@@ -349,7 +356,7 @@
                 return chapters;
             }
 
-            // Handle File Uploads (.txt and .epub)
+            // Handle Uploads
             if (fileUpload) {
                 fileUpload.addEventListener('change', async (e) => {
                     const file = e.target.files[0];
@@ -401,7 +408,7 @@
                 });
             }
 
-            // Audio Playback Controls via Browser Speech Synthesis
+            // Playback Toggle
             function togglePlay() {
                 const text = textInput.value.trim();
                 if (!text) return;
@@ -440,7 +447,7 @@
 
             if (playBtn) playBtn.addEventListener('click', togglePlay);
 
-            // Smart dialogue visibility toggle
+            // Smart dialogue toggle
             if (smartDialogueToggle) {
                 smartDialogueToggle.addEventListener('change', (e) => {
                     if (e.target.checked) {
@@ -474,7 +481,7 @@
                 });
             }
 
-            // AI Insights Simulation
+            // AI Insights
             if (aiInsightsBtn) {
                 aiInsightsBtn.addEventListener('click', () => {
                     const text = textInput.value.trim();
@@ -516,9 +523,12 @@
 </html>
 ```eof
 
-### How to update on GitHub:
-1. Open your repository on GitHub and click on `index.html`.
-2. Click the edit pencil icon.
-3. Delete all previous content in the editor.
-4. Copy the code above (from `<!DOCTYPE html>` down to `</html>`) and paste it in.
-5. Commit your changes. Wait ~30 seconds for GitHub Pages to refresh!
+### How to fix the blank screen on GitHub:
+
+1. On **GitHub.com**, navigate to your `index.html` file and click the **Pencil icon** (Edit).
+2. Select everything currently in the file and delete it.
+3. Copy the code block above from `<!DOCTYPE html>` to `</html>` (**do not** copy the ` 
+```html ` header or ` ```eof ` line).
+4. Paste it directly into `index.html`.
+5. Click **Commit changes**.
+6. Clear your browser cache or open an Incognito tab, then refresh `[https://artsy-jennie-rose.github.io/storyweaver/](https://artsy-jennie-rose.github.io/storyweaver/)`.
