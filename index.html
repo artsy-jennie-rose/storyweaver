@@ -512,10 +512,11 @@
                 });
             }
 
-            // Universal Phonetic Substitution for Contractions & Quote Stripping
+            // Thorough replacement dictionary to prevent spelling out contractions and reading quotation marks
             function cleanForSpeech(text) {
                 return text
-                    .replace(/[“”"„‟«»]/g, '') // Remove quotation marks to stop "quote" announcements
+                    .replace(/[“”"„‟«»]/g, '') // Remove quotation marks completely
+                    // Fully expand contractions so speech engines never spell out letters
                     .replace(/\b(they|we|I|he|she|you|it|that|who|there)['’]ll\b/gi, '$1 will')
                     .replace(/\b(they|we|I|he|she|you|it)['’]re\b/gi, '$1 are')
                     .replace(/\b(I|you|we|they|he|she|it)['’]m\b/gi, '$1 am')
@@ -545,8 +546,8 @@
                     .replace(/\bwhen['’]s\b/gi, 'when is')
                     .replace(/\bwhy['’]s\b/gi, 'why is')
                     .replace(/\bhow['’]s\b/gi, 'how is')
-                    .replace(/([a-zA-Z])['’](t|s)\b/gi, '$1$2')
-                    .replace(/[‘’`ʼ]/g, ' ');
+                    // Catch-all: remove any remaining apostrophes
+                    .replace(/[‘’`ʼ']/g, '');
             }
 
             function parseDialogueSegments(fullText) {
