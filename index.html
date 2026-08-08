@@ -521,7 +521,15 @@
                 currentWordIndexInSegment = 0;
             }
 
+            // Pre-processor to fix awkward pauses on plural possessives and ending punctuation
+            function cleanTextForSpeech(text) {
+                return text
+                    .replace(/([a-zA-Z])s['’]\s/g, '$1s’ ') // Normalize plural possessive apostrophes
+                    .replace(/([a-zA-Z])[—–]([a-zA-Z])/g, '$1 — $2'); // Proper spacing around em-dashes
+            }
+
             function parseDialogueSegments(fullText) {
+                const cleanedText = cleanTextForSpeech(fullText);
                 const regex = /([^"“”'‘’]+)|(["“”'‘’][^"“”'‘’]+["“”'‘’])/g;
                 let match;
                 let segments = [];
@@ -529,7 +537,7 @@
                 const femalePronouns = /\b(she|her|hers|woman|girl|lady|madam|mother|sister|daughter|aunt|queen|princess)\b/i;
                 let lastGender = 'unknown';
 
-                while ((match = regex.exec(fullText)) !== null) {
+                while ((match = regex.exec(cleanedText)) !== null) {
                     let startIndex = match.index;
                     let rawText = match[0];
                     
@@ -543,7 +551,7 @@
                     } else if (match[2]) {
                         let peekGender = lastGender; 
                         let peekIndex = regex.lastIndex;
-                        let peekText = fullText.substring(peekIndex, peekIndex + 80);
+                        let peekText = cleanedText.substring(peekIndex, peekIndex + 80);
                         
                         if (/^\s*[,.]?\s*(she|her|the woman|the girl|the lady|mom|mother)/i.test(peekText)) {
                             peekGender = 'female';
@@ -565,8 +573,8 @@
                     }
                 }
                 
-                if (segments.length === 0 && fullText.trim().length > 0) {
-                    segments.push({ text: fullText, type: 'narrator', startIndex: 0 });
+                if (segments.length === 0 && cleanedText.trim().length > 0) {
+                    segments.push({ text: cleanedText, type: 'narrator', startIndex: 0 });
                 }
                 
                 return segments;
@@ -657,14 +665,12 @@
 
                     if (isPlaying) {
                         if (isPaused) {
-                            // Resume from saved character offset
                             isPaused = false;
                             textInput.readOnly = true; 
                             playIcon.className = "fas fa-pause text-xl";
                             statusText.innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Reading`;
                             speakNextUtterance();
                         } else {
-                            // Pause and save exact position
                             cancelForInterrupt = true;
                             synth.cancel();
                             isPaused = true;
@@ -673,7 +679,6 @@
                             statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-yellow-500"></i> Paused`;
                         }
                     } else {
-                        // Brand new start
                         fullPlaybackReset();
                         isPlaying = true;
                         textInput.readOnly = true; 
