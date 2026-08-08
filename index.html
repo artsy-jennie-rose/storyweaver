@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StoryWeaver - AI Audio Reader</title>
+    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -26,9 +28,11 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between">
 
+    <!-- Header Section -->
     <header class="bg-white shadow-sm border-b border-gray-200 py-4 px-6 sticky top-0 z-20">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             
+            <!-- Logo -->
             <div class="flex items-center gap-2">
                 <div class="bg-indigo-600 text-white p-2 rounded-lg flex items-center justify-center shadow-sm">
                     <i class="fas fa-book-open"></i>
@@ -36,6 +40,7 @@
                 <h1 class="text-xl font-bold text-gray-900 tracking-tight">StoryWeaver</h1>
             </div>
 
+            <!-- Controls -->
             <div class="flex flex-wrap items-center justify-center gap-4 bg-gray-50 p-2 rounded-xl border border-gray-200">
                 <div class="flex items-center gap-2 pr-4 border-r border-gray-200">
                     <span class="text-sm font-medium text-gray-600">Smart Voices</span>
@@ -47,13 +52,10 @@
 
                 <div id="smart-voice-options" style="display: none;" class="items-center gap-3 fade-in flex-wrap">
                     <div class="flex items-center gap-1">
-                        <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">Male</span>
+                        <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">Male (Dialogue)</span>
                         <div class="relative">
                             <select id="smart-male-voice" class="appearance-none bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
-                                <option value="cooper">Cooper (Gruff Southern)</option>
-                                <option value="fenrir" selected>Fenrir (Excitable)</option>
-                                <option value="charon">Charon (Informative)</option>
-                                <option value="orus">Orus (Firm)</option>
+                                <!-- Populated dynamically -->
                             </select>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-blue-600">
                                 <i class="fas fa-chevron-down text-xs"></i>
@@ -62,13 +64,10 @@
                     </div>
                     
                     <div class="flex items-center gap-1">
-                        <span class="text-xs font-semibold text-pink-600 uppercase tracking-wide">Female</span>
+                        <span class="text-xs font-semibold text-pink-600 uppercase tracking-wide">Female (Dialogue)</span>
                         <div class="relative">
                             <select id="smart-female-voice" class="appearance-none bg-pink-50 border border-pink-200 text-pink-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
-                                <option value="leda" selected>Lucy (Bright & Earnest)</option>
-                                <option value="aoede">Aoede (Breezy)</option>
-                                <option value="zephyr">Zephyr (Bright)</option>
-                                <option value="kore">Kore (Firm)</option>
+                                <!-- Populated dynamically -->
                             </select>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-pink-600">
                                 <i class="fas fa-chevron-down text-xs"></i>
@@ -93,6 +92,7 @@
         </div>
     </header>
 
+    <!-- Main Section -->
     <main class="flex-grow max-w-4xl w-full mx-auto p-4 md:p-6 flex flex-col gap-4">
         <div class="flex items-center justify-between mt-2 flex-wrap gap-2">
             <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Story Text / EPUB File</h2>
@@ -131,6 +131,7 @@
         </div>
     </main>
 
+    <!-- Player Controls -->
     <footer class="bg-white border-t border-gray-200 sticky bottom-0 z-20 pb-safe">
         <div class="w-full bg-gray-200 h-1.5">
             <div id="progress-fill" class="bg-indigo-600 h-1.5 w-0 transition-all duration-300"></div>
@@ -167,6 +168,7 @@
         </div>
     </footer>
 
+    <!-- Load JSZip for EPUB parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <script>
@@ -178,6 +180,8 @@
             const fileUpload = document.getElementById('file-upload');
             const chapterSelect = document.getElementById('chapter-select');
             const voiceSelect = document.getElementById('voice-select');
+            const smartMaleVoiceSelect = document.getElementById('smart-male-voice');
+            const smartFemaleVoiceSelect = document.getElementById('smart-female-voice');
             const aiInsightsBtn = document.getElementById('ai-insights-btn');
             const aiInsightsPanel = document.getElementById('ai-insights-panel');
             const speedButtons = document.querySelectorAll('.speed-btn');
@@ -190,23 +194,46 @@
             const narratorLabel = document.getElementById('narrator-label');
 
             let isPlaying = false;
+            let isPaused = false;
             let currentSpeed = 1.0;
             let loadedChapters = [];
             let synth = window.speechSynthesis;
+            
+            // Queue for Smart Voices
+            let utteranceQueue = [];
+            let currentUtteranceIndex = 0;
 
             function loadVoices() {
                 if (!synth) return;
                 const voices = synth.getVoices();
                 if (voices && voices.length > 0 && voiceSelect) {
                     voiceSelect.innerHTML = '';
-                    voices.forEach(v => {
-                        const opt = document.createElement('option');
-                        opt.value = v.name;
-                        opt.textContent = `${v.name} (${v.lang})`;
-                        voiceSelect.appendChild(opt);
+                    smartMaleVoiceSelect.innerHTML = '';
+                    smartFemaleVoiceSelect.innerHTML = '';
+                    
+                    voices.forEach((v, index) => {
+                        const opt1 = document.createElement('option');
+                        opt1.value = v.name;
+                        opt1.textContent = `${v.name} (${v.lang})`;
+                        voiceSelect.appendChild(opt1);
+
+                        const opt2 = document.createElement('option');
+                        opt2.value = v.name;
+                        opt2.textContent = `${v.name} (${v.lang})`;
+                        smartMaleVoiceSelect.appendChild(opt2);
+                        
+                        const opt3 = document.createElement('option');
+                        opt3.value = v.name;
+                        opt3.textContent = `${v.name} (${v.lang})`;
+                        smartFemaleVoiceSelect.appendChild(opt3);
+                        
+                        // Select default options just to have something different selected
+                        if (index === 0) smartMaleVoiceSelect.selectedIndex = index;
+                        if (index === 1 && voices.length > 1) smartFemaleVoiceSelect.selectedIndex = index;
                     });
                 }
             }
+            
             loadVoices();
             if (synth && synth.onvoiceschanged !== undefined) {
                 synth.onvoiceschanged = loadVoices;
@@ -228,6 +255,7 @@
 
             textInput.addEventListener('input', () => {
                 try { localStorage.setItem('sw_text', textInput.value); } catch(e){}
+                resetPlayback();
             });
 
             function updateChapterDropdown() {
@@ -246,6 +274,7 @@
             }
 
             chapterSelect.addEventListener('change', (e) => {
+                resetPlayback();
                 const val = e.target.value;
                 if (val === 'all') {
                     if (loadedChapters.length > 0) {
@@ -306,6 +335,7 @@
                     const file = e.target.files[0];
                     if (!file) return;
 
+                    resetPlayback();
                     loadedChapters = [];
 
                     if (file.name.toLowerCase().endsWith('.epub')) {
@@ -346,52 +376,176 @@
                 });
             }
 
+            function resetPlayback() {
+                if (synth) synth.cancel();
+                isPlaying = false;
+                isPaused = false;
+                playIcon.className = "fas fa-play text-xl ml-1";
+                utteranceQueue = [];
+                currentUtteranceIndex = 0;
+            }
+
+            // Enhanced dialogue parser with gender heuristics
+            function parseDialogue(text) {
+                // Regex to split text by quotes, keeping the delimiters in the match array
+                const regex = /([^"“”]+)|(["“”][^"“”]+["“”])/g;
+                let match;
+                let segments = [];
+                
+                // Words that strongly hint at male vs female speakers in surrounding text
+                const malePronouns = /\b(he|him|his|man|boy|gentleman|sir|father|brother|son|uncle|king|prince)\b/i;
+                const femalePronouns = /\b(she|her|hers|woman|girl|lady|madam|mother|sister|daughter|aunt|queen|princess)\b/i;
+
+                let lastGender = 'unknown'; // Defaults if no strong hints
+
+                while ((match = regex.exec(text)) !== null) {
+                    if (match[1]) {
+                        // Not in quotes (Narrator text)
+                        const narratorText = match[1].trim();
+                        if (narratorText.length > 0) {
+                            segments.push({ text: match[1], type: 'narrator' });
+                            
+                            // Analyze this narrator chunk to guess the speaker of adjacent dialogue
+                            // We look at the last few words before a quote, or the first few words after
+                            // e.g. '..." she said.' or 'He turned and said, "..."'
+                            
+                            let maleHints = (narratorText.match(malePronouns) || []).length;
+                            let femaleHints = (narratorText.match(femalePronouns) || []).length;
+                            
+                            if (maleHints > femaleHints) {
+                                lastGender = 'male';
+                            } else if (femaleHints > maleHints) {
+                                lastGender = 'female';
+                            }
+                            // If equal, we maintain the previous lastGender guess to keep consistency in back-and-forth
+                        }
+                    } else if (match[2]) {
+                        // In quotes (Dialogue)
+                        if (match[2].trim().length > 0) {
+                            let cleanText = match[2].replace(/^["“”]/, '').replace(/["“”]$/, '');
+                            
+                            // To handle "He said / She said" that comes AFTER the quote, 
+                            // we do a quick peekahead into the next narrator string
+                            let peekGender = lastGender; 
+                            
+                            let peekIndex = regex.lastIndex;
+                            let peekText = text.substring(peekIndex, peekIndex + 60); // Look at next 60 chars
+                            
+                            // If the next segment starts immediately with dialogue tags like "she said", override the gender
+                            if (/^\s*[,.]?\s*(she|her|the woman|the girl|the lady)/i.test(peekText)) {
+                                peekGender = 'female';
+                            } else if (/^\s*[,.]?\s*(he|him|his|the man|the boy|the gentleman)/i.test(peekText)) {
+                                peekGender = 'male';
+                            } else {
+                                // If no strong peekahead, use the gender established BEFORE the quote, 
+                                // or alternate if we have no clue to simulate conversation
+                                if(peekGender === 'unknown') {
+                                    peekGender = (segments.filter(s => s.type !== 'narrator').length % 2 === 0) ? 'female' : 'male';
+                                }
+                            }
+                            
+                            segments.push({ text: cleanText, type: peekGender });
+                            
+                            // Update lastGender for the next iteration
+                            lastGender = peekGender;
+                        }
+                    }
+                }
+                
+                if (segments.length === 0 && text.trim().length > 0) {
+                    segments.push({ text: text, type: 'narrator' });
+                }
+                
+                return segments;
+            }
+
+            function speakNextUtterance() {
+                if (!isPlaying || isPaused || currentUtteranceIndex >= utteranceQueue.length) {
+                    if (currentUtteranceIndex >= utteranceQueue.length && utteranceQueue.length > 0) {
+                        isPlaying = false;
+                        playIcon.className = "fas fa-play text-xl ml-1";
+                        statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Finished`;
+                        utteranceQueue = [];
+                        currentUtteranceIndex = 0;
+                    }
+                    return;
+                }
+
+                const segment = utteranceQueue[currentUtteranceIndex];
+                const utter = new SpeechSynthesisUtterance(segment.text);
+                utter.rate = currentSpeed;
+                
+                let selectedVoiceName;
+                
+                if (smartDialogueToggle.checked) {
+                    if (segment.type === 'male') {
+                        selectedVoiceName = smartMaleVoiceSelect.value;
+                    } else if (segment.type === 'female') {
+                        selectedVoiceName = smartFemaleVoiceSelect.value;
+                    } else {
+                        // narrator or fallback
+                        selectedVoiceName = voiceSelect.value;
+                    }
+                } else {
+                    // Smart Voices off, use default for everything
+                    selectedVoiceName = voiceSelect.value;
+                }
+
+                const voices = synth.getVoices();
+                const selectedV = voices.find(v => v.name === selectedVoiceName);
+                if (selectedV) utter.voice = selectedV;
+
+                utter.onend = () => {
+                    currentUtteranceIndex++;
+                    speakNextUtterance();
+                };
+                
+                utter.onerror = (e) => {
+                    console.error("SpeechSynthesisUtterance error:", e);
+                    currentUtteranceIndex++;
+                    speakNextUtterance();
+                };
+
+                synth.speak(utter);
+            }
+
             if (playBtn) {
                 playBtn.addEventListener('click', () => {
                     const txt = textInput.value.trim();
                     if (!txt) return;
 
                     if (isPlaying) {
-                        if (synth) synth.pause();
-                        isPlaying = false;
-                        playIcon.className = "fas fa-play text-xl ml-1";
-                        statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-yellow-500"></i> Paused`;
-                    } else {
-                        if (synth && synth.paused) {
+                        if (isPaused) {
                             synth.resume();
-                        } else if (synth) {
-                            synth.cancel();
-                            const utter = new SpeechSynthesisUtterance(txt.substring(0, 3000));
-                            utter.rate = currentSpeed;
-                            const vName = voiceSelect.value;
-                            const selectedV = synth.getVoices().find(v => v.name === vName);
-                            if (selectedV) utter.voice = selectedV;
-
-                            utter.onend = () => {
-                                isPlaying = false;
-                                playIcon.className = "fas fa-play text-xl ml-1";
-                                statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Finished`;
-                            };
-                            synth.speak(utter);
+                            isPaused = false;
+                            playIcon.className = "fas fa-pause text-xl";
+                            statusText.innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Reading`;
+                        } else {
+                            synth.pause();
+                            isPaused = true;
+                            playIcon.className = "fas fa-play text-xl ml-1";
+                            statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-yellow-500"></i> Paused`;
                         }
+                    } else {
+                        resetPlayback();
                         isPlaying = true;
+                        utteranceQueue = parseDialogue(txt);
                         playIcon.className = "fas fa-pause text-xl";
                         statusText.innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Reading`;
+                        speakNextUtterance();
                     }
                 });
             }
 
             if (clearBtn) {
                 clearBtn.addEventListener('click', () => {
-                    if (synth) synth.cancel();
+                    resetPlayback();
                     textInput.value = '';
                     loadedChapters = [];
                     chapterSelect.innerHTML = '<option value="all">Full Story</option>';
                     localStorage.removeItem('sw_text');
                     localStorage.removeItem('sw_chaps');
                     aiInsightsPanel.classList.add('hidden');
-                    isPlaying = false;
-                    playIcon.className = "fas fa-play text-xl ml-1";
                     progressFill.style.width = '0%';
                     currentProgress.innerText = '0';
                     totalChunks.innerText = '0';
@@ -421,6 +575,9 @@
                         smartVoiceOptions.style.display = 'none';
                         narratorLabel.innerText = "Voice";
                     }
+                    if (isPlaying) {
+                        resetPlayback();
+                    }
                 });
             }
 
@@ -434,6 +591,17 @@
                     t.classList.remove('text-gray-500');
                     t.classList.add('bg-white', 'text-indigo-700', 'shadow-sm');
                     currentSpeed = parseFloat(t.getAttribute('data-speed'));
+                    
+                    if (isPlaying) {
+                         let tempPaused = isPaused;
+                         synth.cancel();
+                         
+                         if(tempPaused){
+                             statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-yellow-500"></i> Paused (Speed updated)`;
+                         } else {
+                             speakNextUtterance();
+                         }
+                    }
                 });
             });
         });
