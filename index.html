@@ -5,14 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StoryWeaver - AI Audio Reader</title>
     <!-- Load Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Load JSZip and ePub.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)">
+    <!-- Load JSZip for fast, reliable EPUB extraction -->
+    <script src="[https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js](https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js)"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap)');
         body { font-family: 'Inter', sans-serif; }
         
         textarea::-webkit-scrollbar { width: 8px; }
@@ -280,9 +279,9 @@
             
             let isPlaying = false;
             let currentSpeed = 1.0;
-            let loadedChapters = []; // Store extracted chapter objects: { title, text }
+            let loadedChapters = [];
 
-            // Load saved story
+            // Load saved story and chapters
             const savedStory = localStorage.getItem('storyweaver_saved_text');
             const savedChapters = localStorage.getItem('storyweaver_saved_chapters');
             
@@ -305,7 +304,7 @@
                 localStorage.setItem('storyweaver_saved_text', textInput.value);
             });
 
-            // Rebuild the Chapter Select Dropdown
+            // Rebuild Chapter Selector
             function rebuildChapterDropdown() {
                 chapterSelect.innerHTML = '<option value="all">Full Story</option>';
                 if (loadedChapters.length > 0) {
@@ -318,7 +317,7 @@
                 }
             }
 
-            // Chapter Dropdown Switcher
+            // Switch viewed chapter
             chapterSelect.addEventListener('change', (e) => {
                 const val = e.target.value;
                 if (val === 'all') {
@@ -333,22 +332,85 @@
                 }
             });
 
-            // Smart dialogue visibility toggle
-            if (smartDialogueToggle) {
-                smartDialogueToggle.addEventListener('change', (e) => {
-                    if (e.target.checked) {
-                        smartVoiceOptions.classList.remove('hidden');
-                        smartVoiceOptions.classList.add('flex');
-                        narratorLabel.classList.remove('hidden');
-                    } else {
-                        smartVoiceOptions.classList.add('hidden');
-                        smartVoiceOptions.classList.remove('flex');
-                        narratorLabel.classList.add('hidden');
+            // Custom JSZip EPUB Parser (Extremely fast & reliable for AO3)
+            async function extractEpubChapters(file) {
+                const zip = await JSZip.loadAsync(file);
+                let chapters = [];
+                let opfPath = "";
+
+                // Find OPF file path in container.xml
+                const containerFile = zip.file("META-INF/container.xml");
+                if (containerFile) {
+                    const xmlStr = await containerFile.async("string");
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(xmlStr, "text/xml");
+                    const root = doc.querySelector("rootfile");
+                    if (root) opfPath = root.getAttribute("full-path") || "";
+                }
+
+                let htmlFiles = [];
+
+                // Parse OPF manifest & spine for exact chapter order
+                if (opfPath && zip.file(opfPath)) {
+                    const opfStr = await zip.file(opfPath).async("string");
+                    const parser = new DOMParser();
+                    const opfDoc = parser.parseFromString(opfStr, "text/xml");
+                    
+                    const manifest = {};
+                    opfDoc.querySelectorAll("manifest > item").forEach(item => {
+                        manifest[item.getAttribute("id")] = item.getAttribute("href");
+                    });
+
+                    const opfFolder = opfPath.includes("/") ? opfPath.substring(0, opfPath.lastIndexOf("/") + 1) : "";
+                    
+                    opfDoc.querySelectorAll("spine > itemref").forEach(ref => {
+                        const idref = ref.getAttribute("idref");
+                        if (manifest[idref]) {
+                            htmlFiles.push(opfFolder + manifest[idref]);
+                        }
+                    });
+                }
+
+                // Fallback if no OPF spine found: scan zip for html/xhtml files
+                if (htmlFiles.length === 0) {
+                    Object.keys(zip.files).forEach(fn => {
+                        if ((fn.endsWith('.html') || fn.endsWith('.xhtml') || fn.endsWith('.htm')) && !fn.includes('nav') && !fn.includes('toc')) {
+                            htmlFiles.push(fn);
+                        }
+                    });
+                    htmlFiles.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+                }
+
+                // Process each chapter HTML file
+                let count = 0;
+                for (let path of htmlFiles) {
+                    const entry = zip.file(path) || zip.file(decodeURIComponent(path));
+                    if (!entry) continue;
+
+                    const htmlContent = await entry.async("string");
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlContent, "text/html");
+
+                    doc.querySelectorAll("script, style, nav, header, footer").forEach(el => el.remove());
+
+                    const cleanText = (doc.body ? doc.body.textContent : doc.textContent || "").replace(/\n\s*\n/g, '\n\n').trim();
+
+                    if (cleanText.length > 30) {
+                        count++;
+                        let title = `Chapter ${count}`;
+                        const heading = doc.querySelector("h1, h2, h3, h4, .title, .chapter-title");
+                        if (heading && heading.textContent.trim().length > 0 && heading.textContent.trim().length < 60) {
+                            title = heading.textContent.trim();
+                        }
+
+                        chapters.push({ title, text: cleanText });
                     }
-                });
+                }
+
+                return chapters;
             }
 
-            // Handle local file uploads (.txt and .epub) with robust text & chapter extraction
+            // Handle File Upload
             if (fileUpload) {
                 fileUpload.addEventListener('change', async (e) => {
                     const file = e.target.files[0];
@@ -359,84 +421,27 @@
                     if (file.name.endsWith('.epub')) {
                         document.getElementById('status-text').innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Parsing EPUB`;
                         try {
-                            const reader = new FileReader();
-                            reader.onload = async function(event) {
-                                const buffer = event.target.result;
-                                const book = ePub(buffer);
-                                await book.ready;
-                                
-                                let fullStoryText = "";
-                                const spineItems = book.spine.items;
-                                let chapterCount = 0;
-                                
-                                for (let item of spineItems) {
-                                    try {
-                                        const chapterSection = await book.load(item.href);
-                                        let htmlString = "";
-                                        
-                                        if (typeof chapterSection === 'string') {
-                                            htmlString = chapterSection;
-                                        } else if (chapterSection instanceof Document || chapterSection instanceof XMLDocument) {
-                                            htmlString = new XMLSerializer().serializeToString(chapterSection);
-                                        } else if (chapterSection && chapterSection.documentElement) {
-                                            htmlString = new XMLSerializer().serializeToString(chapterSection.documentElement);
-                                        } else if (chapterSection && chapterSection.outerHTML) {
-                                            htmlString = chapterSection.outerHTML;
-                                        }
+                            loadedChapters = await extractEpubChapters(file);
 
-                                        if (htmlString) {
-                                            const parser = new DOMParser();
-                                            const parsedDoc = parser.parseFromString(htmlString, 'text/html');
-                                            parsedDoc.querySelectorAll('script, style').forEach(el => el.remove());
-                                            
-                                            const cleanText = parsedDoc.body.textContent || parsedDoc.body.innerText || "";
-                                            
-                                            if (cleanText.trim().length > 0) {
-                                                chapterCount++;
-                                                
-                                                // Extract chapter title from heading or fallback
-                                                let headingEl = parsedDoc.querySelector('h1, h2, h3, h4, .chapter-title, .title');
-                                                let chapterTitle = `Chapter ${chapterCount}`;
-                                                
-                                                if (headingEl && headingEl.textContent.trim().length > 0 && headingEl.textContent.trim().length < 60) {
-                                                    chapterTitle = headingEl.textContent.trim();
-                                                }
-                                                
-                                                loadedChapters.push({
-                                                    title: chapterTitle,
-                                                    text: cleanText.trim()
-                                                });
-
-                                                fullStoryText += `${chapterTitle}\n\n${cleanText.trim()}\n\n---\n\n`;
-                                            }
-                                        }
-                                    } catch (chapErr) {
-                                        console.warn("Skipping chapter parse error", chapErr);
-                                    }
-                                }
-                                
-                                if (fullStoryText.trim().length > 0) {
-                                    textInput.value = fullStoryText.trim();
-                                    rebuildChapterDropdown();
-                                    localStorage.setItem('storyweaver_saved_text', textInput.value);
-                                    localStorage.setItem('storyweaver_saved_chapters', JSON.stringify(loadedChapters));
-                                    document.getElementById('status-text').innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> ${loadedChapters.length} Chapters Loaded!`;
-                                } else {
-                                    throw new Error("Empty text extracted");
-                                }
-                            };
-                            reader.readAsArrayBuffer(file);
+                            if (loadedChapters.length > 0) {
+                                textInput.value = loadedChapters.map(c => `${c.title}\n\n${c.text}`).join('\n\n---\n\n');
+                                rebuildChapterDropdown();
+                                localStorage.setItem('storyweaver_saved_text', textInput.value);
+                                localStorage.setItem('storyweaver_saved_chapters', JSON.stringify(loadedChapters));
+                                document.getElementById('status-text').innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> ${loadedChapters.length} Chapters Loaded!`;
+                            } else {
+                                throw new Error("No chapters extracted");
+                            }
                         } catch (err) {
                             document.getElementById('status-text').innerHTML = `<i class="fas fa-circle text-[8px] text-red-500"></i> EPUB Parse Error`;
                         }
                     } else {
-                        // Standard text file - Auto detect chapters if separated by "Chapter X"
+                        // Standard text file
                         const reader = new FileReader();
                         reader.onload = function(event) {
                             const rawText = event.target.result;
                             textInput.value = rawText;
                             
-                            // Split chapters if formatted as "Chapter 1", "Chapter 2" etc.
                             const chapterMatches = rawText.split(/(?=\b(?:Chapter|CHAPTER)\s+\d+)/g);
                             if (chapterMatches.length > 1) {
                                 loadedChapters = chapterMatches.map((chText, idx) => {
@@ -454,6 +459,21 @@
                             document.getElementById('status-text').innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> File Uploaded!`;
                         };
                         reader.readAsText(file);
+                    }
+                });
+            }
+
+            // Smart dialogue visibility toggle
+            if (smartDialogueToggle) {
+                smartDialogueToggle.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        smartVoiceOptions.classList.remove('hidden');
+                        smartVoiceOptions.classList.add('flex');
+                        narratorLabel.classList.remove('hidden');
+                    } else {
+                        smartVoiceOptions.classList.add('hidden');
+                        smartVoiceOptions.classList.remove('flex');
+                        narratorLabel.classList.add('hidden');
                     }
                 });
             }
@@ -537,8 +557,5 @@
 </html>
 ```eof
 
-### Key Updates Added:
-1. **Dynamic Chapter Parsing:** Whenever an EPUB is uploaded, each chapter section is extracted along with its heading/title.
-2. **Interactive Dropdown:** The bottom chapter dropdown now automatically lists every chapter ("Chapter 1", "Chapter 2", etc. or custom titles like "Prologue").
-3. **Instant Jump:** Selecting a specific chapter from the dropdown immediately switches the view to show only that chapter's text. Choosing "Full Story" restores the full story view.
-4. **Persistent Chapters:** Chapters and reading positions are saved to browser local storage so they remain loaded when you return later.
+### Quick tip for GitHub:
+When copying the code above into GitHub, make sure to copy up to `</html>` and exclude the ````eof` marker line at the very end so it won't render at the bottom of your web page.
