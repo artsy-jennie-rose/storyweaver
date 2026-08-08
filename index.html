@@ -512,9 +512,12 @@
                 });
             }
 
-            // Strip apostrophes entirely for the speech engine text so it reads contractions as complete continuous words
-            function stripApostrophesForSpeech(text) {
-                return text.replace(/['’]/g, '');
+            // Completely strips out quotation marks and normalizes apostrophes for clean speech without voicing punctuation
+            function cleanForSpeech(text) {
+                return text
+                    .replace(/[“”"„‟«»]/g, '') // Remove all double quote marks so the engine never says "quote"
+                    .replace(/[‘’`ʼ]/g, "'") // Standardize single apostrophes
+                    .replace(/([a-zA-Z])['](t|s|re|ll|ve|m|d)\b/gi, '$1$2'); // Clean contractions
             }
 
             function parseDialogueSegments(fullText) {
@@ -535,8 +538,8 @@
                         if (maleHints > femaleHints) lastGender = 'male';
                         else if (femaleHints > maleHints) lastGender = 'female';
                         
-                        let cleanSpeechText = stripApostrophesForSpeech(rawText);
-                        segments.push({ text: cleanSpeechText, type: 'narrator', startIndex: startIndex, rawLength: rawText.length });
+                        let speechText = cleanForSpeech(rawText);
+                        segments.push({ text: speechText, type: 'narrator', startIndex: startIndex, rawLength: rawText.length });
                     } else if (match[2]) {
                         let peekGender = lastGender; 
                         let peekIndex = regex.lastIndex;
@@ -552,21 +555,16 @@
                             }
                         }
                         
-                        let cleanSpeechText = stripApostrophesForSpeech(rawText);
+                        let speechText = cleanForSpeech(rawText);
                         
-                        if (rawText.length < 4 && rawText.match(/^['‘’]/)) {
-                             segments.push({ text: cleanSpeechText, type: 'narrator', startIndex: startIndex, rawLength: rawText.length });
-                        } else {
-                             segments.push({ text: cleanSpeechText, type: peekGender, startIndex: startIndex, rawLength: rawText.length });
-                        }
-                        
+                        segments.push({ text: speechText, type: peekGender, startIndex: startIndex, rawLength: rawText.length });
                         lastGender = peekGender;
                     }
                 }
                 
                 if (segments.length === 0 && fullText.trim().length > 0) {
-                    let cleanFull = stripApostrophesForSpeech(fullText);
-                    segments.push({ text: cleanFull, type: 'narrator', startIndex: 0, rawLength: fullText.length });
+                    let speechText = cleanForSpeech(fullText);
+                    segments.push({ text: speechText, type: 'narrator', startIndex: 0, rawLength: fullText.length });
                 }
                 
                 return segments;
