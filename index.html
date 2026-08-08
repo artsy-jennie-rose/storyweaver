@@ -4,15 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StoryWeaver - AI Audio Reader</title>
-    <!-- Load Tailwind CSS -->
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load Font Awesome Icons -->
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; color: #1f2937; margin: 0; padding: 0; }
         textarea::-webkit-scrollbar { width: 8px; }
         textarea::-webkit-scrollbar-track { background: #f8fafc; border-radius: 4px; }
         textarea::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -30,14 +29,15 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col text-gray-800">
+<body class="min-h-screen flex flex-col justify-between">
 
+    <!-- Header Section -->
     <header class="bg-white shadow-sm border-b border-gray-200 py-4 px-6 sticky top-0 z-20">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             
             <!-- Logo -->
             <div class="flex items-center gap-2">
-                <div class="bg-indigo-600 text-white p-2 rounded-lg flex items-center justify-center">
+                <div class="bg-indigo-600 text-white p-2 rounded-lg flex items-center justify-center shadow-sm">
                     <i class="fas fa-book-open"></i>
                 </div>
                 <h1 class="text-xl font-bold text-gray-900 tracking-tight">StoryWeaver</h1>
@@ -55,48 +55,12 @@
                     </div>
                 </div>
 
-                <!-- Custom Voice Selections for Smart Dialogue -->
-                <div id="smart-voice-options" class="hidden items-center gap-3 fade-in flex-wrap">
-                    <!-- Male Voice Picker -->
-                    <div class="flex items-center gap-1">
-                        <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">Male</span>
-                        <div class="relative">
-                            <select id="smart-male-voice" class="appearance-none bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
-                                <option value="cooper">Cooper (Gruff Southern)</option>
-                                <option value="fenrir" selected>Fenrir (Excitable)</option>
-                                <option value="charon">Charon (Informative)</option>
-                                <option value="orus">Orus (Firm)</option>
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-blue-600">
-                                <i class="fas fa-chevron-down text-xs"></i>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Female Voice Picker -->
-                    <div class="flex items-center gap-1">
-                        <span class="text-xs font-semibold text-pink-600 uppercase tracking-wide">Female</span>
-                        <div class="relative">
-                            <select id="smart-female-voice" class="appearance-none bg-pink-50 border border-pink-200 text-pink-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
-                                <option value="leda" selected>Lucy (Bright & Earnest)</option>
-                                <option value="aoede">Aoede (Breezy)</option>
-                                <option value="zephyr">Zephyr (Bright)</option>
-                                <option value="kore">Kore (Firm)</option>
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-pink-600">
-                                <i class="fas fa-chevron-down text-xs"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="h-6 w-px bg-gray-300 hidden sm:block"></div>
-                </div>
-
-                <!-- Main Narrator Voice -->
-                <div class="flex items-center gap-1">
-                    <span id="narrator-label" class="hidden text-xs font-semibold text-gray-500 uppercase tracking-wide fade-in">Narrator</span>
+                <!-- Voice Selection Dropdown -->
+                <div class="flex items-center gap-2">
+                    <span id="narrator-label" class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Voice</span>
                     <div class="relative">
                         <select id="voice-select" class="appearance-none bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
-                            <option value="default">Default Narrator</option>
+                            <option value="default">Default Voice</option>
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
                             <i class="fas fa-chevron-down text-xs"></i>
@@ -108,15 +72,16 @@
         </div>
     </header>
 
+    <!-- Main Content Area -->
     <main class="flex-grow max-w-4xl w-full mx-auto p-4 md:p-6 flex flex-col gap-4">
         
-        <!-- Toolbar above text -->
+        <!-- Action Toolbar -->
         <div class="flex items-center justify-between mt-2 flex-wrap gap-2">
-            <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Story Input or EPUB/TXT File</h2>
+            <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Story Text / File</h2>
             <div class="flex gap-2 items-center flex-wrap">
                 <input type="file" id="file-upload" accept=".txt,.epub" class="hidden">
                 <label for="file-upload" class="cursor-pointer flex items-center gap-2 bg-indigo-50 border border-indigo-200 text-indigo-700 text-sm font-medium py-1.5 px-3 rounded-full shadow-sm hover:bg-indigo-100 transition-all">
-                    <i class="fas fa-file-arrow-up"></i> Upload EPUB / TXT
+                    <i class="fas fa-file-arrow-up"></i> Upload File (.txt / .epub)
                 </label>
                 <button id="ai-insights-btn" class="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-sm font-medium py-1.5 px-4 rounded-full shadow hover:shadow-md hover:from-purple-600 hover:to-indigo-600 transition-all">
                     <i class="fas fa-sparkles"></i> AI Insights
@@ -144,12 +109,13 @@
             </div>
         </div>
 
-        <!-- Main Text Area -->
-        <div class="flex-grow bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-            <textarea id="text-input" class="w-full h-[50vh] md:h-full flex-grow p-5 resize-none outline-none text-gray-700 text-lg leading-relaxed placeholder-gray-400" placeholder="Upload an AO3 .epub file, a Google Doc .txt file, or type story text here..."></textarea>
+        <!-- Text Input Window -->
+        <div class="flex-grow bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col min-h-[350px]">
+            <textarea id="text-input" class="w-full flex-grow p-5 resize-none outline-none text-gray-700 text-lg leading-relaxed placeholder-gray-400 min-h-[300px]" placeholder="Upload an AO3 .epub or .txt file, or type/paste your story here..."></textarea>
         </div>
     </main>
 
+    <!-- Bottom Sticky Player Controls -->
     <footer class="bg-white border-t border-gray-200 sticky bottom-0 z-20 pb-safe">
         <!-- Progress Bar -->
         <div class="w-full bg-gray-200 h-1.5">
@@ -158,7 +124,7 @@
         
         <div class="max-w-4xl mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-4">
             
-            <!-- Status & Chapter Selector -->
+            <!-- Status & Chapter Dropdown -->
             <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
                 <div class="flex flex-col">
                     <span id="status-text" class="text-xs font-semibold text-gray-500 uppercase flex items-center gap-1">
@@ -198,337 +164,283 @@
         </div>
     </footer>
 
-    <!-- Hidden audio element for smartwatch/lockscreen integration -->
-    <audio id="media-anchor" preload="none"></audio>
-
-    <!-- JSZip Script loaded at bottom of body -->
+    <!-- Load JSZip at the end of the body to prevent blocking render -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
+    <!-- Core App Logic -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const smartDialogueToggle = document.getElementById('smart-dialogue-toggle');
-            const smartVoiceOptions = document.getElementById('smart-voice-options');
-            const narratorLabel = document.getElementById('narrator-label');
-            const playBtn = document.getElementById('play-btn');
-            const playIcon = document.getElementById('play-icon');
-            const clearBtn = document.getElementById('clear-btn');
-            const textInput = document.getElementById('text-input');
-            const fileUpload = document.getElementById('file-upload');
-            const chapterSelect = document.getElementById('chapter-select');
-            const voiceSelect = document.getElementById('voice-select');
-            const aiInsightsBtn = document.getElementById('ai-insights-btn');
-            const aiInsightsPanel = document.getElementById('ai-insights-panel');
-            const speedButtons = document.querySelectorAll('.speed-btn');
-            const statusText = document.getElementById('status-text');
-            const progressFill = document.getElementById('progress-fill');
-            const currentProgress = document.getElementById('current-progress');
-            const totalChunks = document.getElementById('total-chunks');
-
-            let isPlaying = false;
-            let currentSpeed = 1.0;
-            let loadedChapters = [];
-            let synth = window.speechSynthesis;
-            let currentUtterance = null;
-
-            // Voice Loading
-            function populateVoiceList() {
-                if (!synth) return;
-                const voices = synth.getVoices();
-                if (voices.length > 0 && voiceSelect) {
-                    voiceSelect.innerHTML = '';
-                    voices.forEach((v) => {
-                        const opt = document.createElement('option');
-                        opt.value = v.name;
-                        opt.textContent = `${v.name} (${v.lang})`;
-                        voiceSelect.appendChild(opt);
-                    });
-                }
-            }
-            
-            populateVoiceList();
-            if (synth && synth.onvoiceschanged !== undefined) {
-                synth.onvoiceschanged = populateVoiceList;
-            }
-
-            // Restore Saved Text
+        window.addEventListener('DOMContentLoaded', () => {
             try {
-                const savedStory = localStorage.getItem('storyweaver_saved_text');
-                const savedChapters = localStorage.getItem('storyweaver_saved_chapters');
+                const playBtn = document.getElementById('play-btn');
+                const playIcon = document.getElementById('play-icon');
+                const clearBtn = document.getElementById('clear-btn');
+                const textInput = document.getElementById('text-input');
+                const fileUpload = document.getElementById('file-upload');
+                const chapterSelect = document.getElementById('chapter-select');
+                const voiceSelect = document.getElementById('voice-select');
+                const aiInsightsBtn = document.getElementById('ai-insights-btn');
+                const aiInsightsPanel = document.getElementById('ai-insights-panel');
+                const speedButtons = document.querySelectorAll('.speed-btn');
+                const statusText = document.getElementById('status-text');
+                const currentProgress = document.getElementById('current-progress');
+                const totalChunks = document.getElementById('total-chunks');
+                const progressFill = document.getElementById('progress-fill');
 
-                if (savedChapters) {
-                    loadedChapters = JSON.parse(savedChapters) || [];
-                    rebuildChapterDropdown();
+                let isPlaying = false;
+                let currentSpeed = 1.0;
+                let loadedChapters = [];
+                let synth = window.speechSynthesis;
+
+                // Load System Speech Voices
+                function loadVoices() {
+                    if (!synth) return;
+                    const voices = synth.getVoices();
+                    if (voices && voices.length > 0 && voiceSelect) {
+                        voiceSelect.innerHTML = '';
+                        voices.forEach(v => {
+                            const opt = document.createElement('option');
+                            opt.value = v.name;
+                            opt.textContent = `${v.name} (${v.lang})`;
+                            voiceSelect.appendChild(opt);
+                        });
+                    }
+                }
+                loadVoices();
+                if (synth && synth.onvoiceschanged !== undefined) {
+                    synth.onvoiceschanged = loadVoices;
                 }
 
-                if (savedStory && typeof savedStory === 'string' && !savedStory.includes('[object XMLDocument]')) {
-                    textInput.value = savedStory;
-                } else {
-                    localStorage.removeItem('storyweaver_saved_text');
-                    localStorage.removeItem('storyweaver_saved_chapters');
-                }
-            } catch (err) {
-                console.warn("Storage reset:", err);
-                try { localStorage.clear(); } catch(e){}
-            }
-
-            // Auto-Save Text
-            textInput.addEventListener('input', () => {
+                // Safe Session Restoration
                 try {
-                    localStorage.setItem('storyweaver_saved_text', textInput.value);
-                } catch (e) {}
-            });
-
-            // Rebuild Dropdown
-            function rebuildChapterDropdown() {
-                chapterSelect.innerHTML = '<option value="all">Full Story</option>';
-                if (loadedChapters.length > 0) {
-                    loadedChapters.forEach((ch, idx) => {
-                        const opt = document.createElement('option');
-                        opt.value = idx;
-                        opt.textContent = ch.title;
-                        chapterSelect.appendChild(opt);
-                    });
-                    totalChunks.innerText = loadedChapters.length.toString();
-                } else {
-                    totalChunks.innerText = "0";
+                    const savedText = localStorage.getItem('sw_text');
+                    const savedChaps = localStorage.getItem('sw_chaps');
+                    if (savedChaps) {
+                        loadedChapters = JSON.parse(savedChaps);
+                        updateChapterDropdown();
+                    }
+                    if (savedText) {
+                        textInput.value = savedText;
+                    }
+                } catch(e) {
+                    localStorage.clear();
                 }
-            }
 
-            // Select Chapter
-            chapterSelect.addEventListener('change', (e) => {
-                const val = e.target.value;
-                if (val === 'all') {
+                // Auto Save on Typing
+                textInput.addEventListener('input', () => {
+                    try { localStorage.setItem('sw_text', textInput.value); } catch(e){}
+                });
+
+                // Update Chapter Dropdown UI
+                function updateChapterDropdown() {
+                    chapterSelect.innerHTML = '<option value="all">Full Story</option>';
                     if (loadedChapters.length > 0) {
-                        textInput.value = loadedChapters.map(c => `${c.title}\n\n${c.text}`).join('\n\n---\n\n');
-                    }
-                    currentProgress.innerText = "0";
-                } else {
-                    const idx = parseInt(val, 10);
-                    if (loadedChapters[idx]) {
-                        textInput.value = loadedChapters[idx].text;
-                        currentProgress.innerText = (idx + 1).toString();
-                        progressFill.style.width = `${Math.round(((idx + 1) / loadedChapters.length) * 100)}%`;
-                    }
-                }
-            });
-
-            // Extract Chapters from EPUB
-            async function extractEpubChapters(file) {
-                if (typeof JSZip === 'undefined') {
-                    throw new Error("JSZip unavailable");
-                }
-                const zip = await JSZip.loadAsync(file);
-                let chapters = [];
-                let htmlFiles = [];
-
-                zip.forEach((relativePath, zipEntry) => {
-                    const lower = relativePath.toLowerCase();
-                    if ((lower.endsWith('.html') || lower.endsWith('.xhtml') || lower.endsWith('.htm')) && !lower.includes('nav.') && !lower.includes('toc.')) {
-                        htmlFiles.push(relativePath);
-                    }
-                });
-
-                htmlFiles.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
-
-                let count = 0;
-                for (let path of htmlFiles) {
-                    const entry = zip.file(path);
-                    if (!entry) continue;
-
-                    const htmlStr = await entry.async("string");
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(htmlStr, "text/html");
-
-                    doc.querySelectorAll("script, style, nav, header, footer").forEach(el => el.remove());
-
-                    const cleanText = (doc.body ? doc.body.textContent : doc.textContent || "").replace(/\n\s*\n/g, '\n\n').trim();
-
-                    if (cleanText.length > 30) {
-                        count++;
-                        let title = `Chapter ${count}`;
-                        const heading = doc.querySelector("h1, h2, h3, h4, .title, .chapter-title");
-                        if (heading && heading.textContent.trim().length > 0 && heading.textContent.trim().length < 60) {
-                            title = heading.textContent.trim();
-                        }
-                        chapters.push({ title, text: cleanText });
-                    }
-                }
-                return chapters;
-            }
-
-            // Handle Uploads
-            if (fileUpload) {
-                fileUpload.addEventListener('change', async (e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-
-                    loadedChapters = [];
-
-                    if (file.name.toLowerCase().endsWith('.epub')) {
-                        statusText.innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Parsing EPUB`;
-                        try {
-                            loadedChapters = await extractEpubChapters(file);
-                            if (loadedChapters.length > 0) {
-                                textInput.value = loadedChapters.map(c => `${c.title}\n\n${c.text}`).join('\n\n---\n\n');
-                                rebuildChapterDropdown();
-                                localStorage.setItem('storyweaver_saved_text', textInput.value);
-                                localStorage.setItem('storyweaver_saved_chapters', JSON.stringify(loadedChapters));
-                                statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> ${loadedChapters.length} Chapters Loaded!`;
-                            } else {
-                                throw new Error("No chapters found");
-                            }
-                        } catch (err) {
-                            console.error(err);
-                            statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-red-500"></i> EPUB Error`;
-                        }
+                        loadedChapters.forEach((ch, i) => {
+                            const opt = document.createElement('option');
+                            opt.value = i;
+                            opt.textContent = ch.title;
+                            chapterSelect.appendChild(opt);
+                        });
+                        totalChunks.innerText = loadedChapters.length.toString();
                     } else {
-                        const reader = new FileReader();
-                        reader.onload = function(evt) {
-                            const rawText = evt.target.result;
-                            textInput.value = rawText;
-                            
-                            const chapterMatches = rawText.split(/(?=\b(?:Chapter|CHAPTER)\s+\d+)/g);
-                            if (chapterMatches.length > 1) {
-                                loadedChapters = chapterMatches.map((chText, idx) => {
-                                    const firstLine = chText.trim().split('\n')[0];
-                                    return {
-                                        title: firstLine.length < 50 ? firstLine : `Chapter ${idx + 1}`,
-                                        text: chText.trim()
-                                    };
-                                });
-                                rebuildChapterDropdown();
-                                localStorage.setItem('storyweaver_saved_chapters', JSON.stringify(loadedChapters));
-                            }
-                            
-                            localStorage.setItem('storyweaver_saved_text', textInput.value);
-                            statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> File Uploaded!`;
-                        };
-                        reader.readAsText(file);
+                        totalChunks.innerText = "0";
+                    }
+                }
+
+                // Switch Chapter View
+                chapterSelect.addEventListener('change', (e) => {
+                    const val = e.target.value;
+                    if (val === 'all') {
+                        if (loadedChapters.length > 0) {
+                            textInput.value = loadedChapters.map(c => `${c.title}\n\n${c.text}`).join('\n\n---\n\n');
+                        }
+                        currentProgress.innerText = "0";
+                        progressFill.style.width = "0%";
+                    } else {
+                        const idx = parseInt(val, 10);
+                        if (loadedChapters[idx]) {
+                            textInput.value = loadedChapters[idx].text;
+                            currentProgress.innerText = (idx + 1).toString();
+                            progressFill.style.width = `${Math.round(((idx + 1) / loadedChapters.length) * 100)}%`;
+                        }
                     }
                 });
-            }
 
-            // Playback Toggle
-            function togglePlay() {
-                const text = textInput.value.trim();
-                if (!text) return;
+                // Handle Uploads
+                if (fileUpload) {
+                    fileUpload.addEventListener('change', async (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
 
-                if (isPlaying) {
-                    if (synth) synth.pause();
-                    isPlaying = false;
-                    playIcon.className = "fas fa-play text-xl ml-1";
-                    statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-yellow-500"></i> Paused`;
-                } else {
-                    if (synth && synth.paused) {
-                        synth.resume();
-                    } else if (synth) {
-                        synth.cancel();
-                        currentUtterance = new SpeechSynthesisUtterance(text.substring(0, 3000));
-                        currentUtterance.rate = currentSpeed;
-                        
-                        const selectedVoiceName = voiceSelect.value;
-                        const voices = synth.getVoices();
-                        const chosen = voices.find(v => v.name === selectedVoiceName);
-                        if (chosen) currentUtterance.voice = chosen;
+                        loadedChapters = [];
 
-                        currentUtterance.onend = () => {
+                        if (file.name.toLowerCase().endsWith('.epub')) {
+                            statusText.innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Reading EPUB...`;
+                            try {
+                                if (typeof JSZip === 'undefined') throw new Error("JSZip loading");
+                                const zip = await JSZip.loadAsync(file);
+                                let htmlFiles = [];
+
+                                zip.forEach((relPath) => {
+                                    const l = relPath.toLowerCase();
+                                    if ((l.endsWith('.html') || l.endsWith('.xhtml') || l.endsWith('.htm')) && !l.includes('nav.') && !l.includes('toc.')) {
+                                        htmlFiles.push(relPath);
+                                    }
+                                });
+
+                                htmlFiles.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+
+                                let count = 0;
+                                for (let p of htmlFiles) {
+                                    const entry = zip.file(p);
+                                    if (!entry) continue;
+                                    const str = await entry.async("string");
+                                    const parser = new DOMParser();
+                                    const doc = parser.parseFromString(str, "text/html");
+                                    doc.querySelectorAll("script, style, nav, header, footer").forEach(el => el.remove());
+                                    const txt = (doc.body ? doc.body.textContent : doc.textContent || "").replace(/\n\s*\n/g, '\n\n').trim();
+
+                                    if (txt.length > 20) {
+                                        count++;
+                                        let title = `Chapter ${count}`;
+                                        const h = doc.querySelector("h1, h2, h3, h4, .title");
+                                        if (h && h.textContent.trim().length > 0 && h.textContent.trim().length < 60) {
+                                            title = h.textContent.trim();
+                                        }
+                                        loadedChapters.push({ title, text: txt });
+                                    }
+                                }
+
+                                if (loadedChapters.length > 0) {
+                                    textInput.value = loadedChapters.map(c => `${c.title}\n\n${c.text}`).join('\n\n---\n\n');
+                                    updateChapterDropdown();
+                                    localStorage.setItem('sw_text', textInput.value);
+                                    localStorage.setItem('sw_chaps', JSON.stringify(loadedChapters));
+                                    statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> ${loadedChapters.length} Chapters Loaded!`;
+                                } else {
+                                    throw new Error("No text");
+                                }
+                            } catch(err) {
+                                statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-red-500"></i> EPUB Error`;
+                            }
+                        } else {
+                            // Text file
+                            const reader = new FileReader();
+                            reader.onload = function(evt) {
+                                const raw = evt.target.result;
+                                textInput.value = raw;
+                                const matches = raw.split(/(?=\b(?:Chapter|CHAPTER)\s+\d+)/g);
+                                if (matches.length > 1) {
+                                    loadedChapters = matches.map((ch, i) => ({
+                                        title: ch.trim().split('\n')[0].substring(0, 40) || `Chapter ${i + 1}`,
+                                        text: ch.trim()
+                                    }));
+                                    updateChapterDropdown();
+                                    localStorage.setItem('sw_chaps', JSON.stringify(loadedChapters));
+                                }
+                                localStorage.setItem('sw_text', textInput.value);
+                                statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Text File Loaded!`;
+                            };
+                            reader.readAsText(file);
+                        }
+                    });
+                }
+
+                // Speech Play / Pause
+                if (playBtn) {
+                    playBtn.addEventListener('click', () => {
+                        const txt = textInput.value.trim();
+                        if (!txt) return;
+
+                        if (isPlaying) {
+                            if (synth) synth.pause();
                             isPlaying = false;
                             playIcon.className = "fas fa-play text-xl ml-1";
-                            statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Finished`;
-                        };
+                            statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-yellow-500"></i> Paused`;
+                        } else {
+                            if (synth && synth.paused) {
+                                synth.resume();
+                            } else if (synth) {
+                                synth.cancel();
+                                const utter = new SpeechSynthesisUtterance(txt.substring(0, 3000));
+                                utter.rate = currentSpeed;
+                                const vName = voiceSelect.value;
+                                const selectedV = synth.getVoices().find(v => v.name === vName);
+                                if (selectedV) utter.voice = selectedV;
 
-                        synth.speak(currentUtterance);
-                    }
-                    isPlaying = true;
-                    playIcon.className = "fas fa-pause text-xl";
-                    statusText.innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Reading`;
-                }
-            }
-
-            if (playBtn) playBtn.addEventListener('click', togglePlay);
-
-            // Smart dialogue toggle
-            if (smartDialogueToggle) {
-                smartDialogueToggle.addEventListener('change', (e) => {
-                    if (e.target.checked) {
-                        smartVoiceOptions.classList.remove('hidden');
-                        smartVoiceOptions.classList.add('flex');
-                        narratorLabel.classList.remove('hidden');
-                    } else {
-                        smartVoiceOptions.classList.add('hidden');
-                        smartVoiceOptions.classList.remove('flex');
-                        narratorLabel.classList.add('hidden');
-                    }
-                });
-            }
-
-            // Clear Button
-            if (clearBtn) {
-                clearBtn.addEventListener('click', () => {
-                    if (synth) synth.cancel();
-                    textInput.value = '';
-                    loadedChapters = [];
-                    chapterSelect.innerHTML = '<option value="all">Full Story</option>';
-                    localStorage.removeItem('storyweaver_saved_text');
-                    localStorage.removeItem('storyweaver_saved_chapters');
-                    aiInsightsPanel.classList.add('hidden');
-                    isPlaying = false;
-                    playIcon.className = "fas fa-play text-xl ml-1";
-                    progressFill.style.width = '0%';
-                    currentProgress.innerText = '0';
-                    totalChunks.innerText = '0';
-                    statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Cleared`;
-                });
-            }
-
-            // AI Insights
-            if (aiInsightsBtn) {
-                aiInsightsBtn.addEventListener('click', () => {
-                    const text = textInput.value.trim();
-                    if (!text) return;
-                    
-                    aiInsightsBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Analyzing...`;
-                    
-                    setTimeout(() => {
-                        aiInsightsPanel.classList.remove('hidden');
-                        document.getElementById('insight-summary').innerText = `Parsed story narrative contains ${loadedChapters.length || 1} chapter(s) with rich emotional progression and strong conversational dynamics.`;
-                        document.getElementById('insight-mood').innerText = "Immersive & Engaging";
-                        aiInsightsBtn.innerHTML = `<i class="fas fa-sparkles"></i> AI Insights`;
-                    }, 1000);
-                });
-            }
-
-            // Speed Control Buttons
-            speedButtons.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    speedButtons.forEach(b => {
-                        b.classList.remove('bg-white', 'text-indigo-700', 'shadow-sm');
-                        b.classList.add('text-gray-500');
+                                utter.onend = () => {
+                                    isPlaying = false;
+                                    playIcon.className = "fas fa-play text-xl ml-1";
+                                    statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Finished`;
+                                };
+                                synth.speak(utter);
+                            }
+                            isPlaying = true;
+                            playIcon.className = "fas fa-pause text-xl";
+                            statusText.innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Reading`;
+                        }
                     });
-                    
-                    const target = e.currentTarget;
-                    target.classList.remove('text-gray-500');
-                    target.classList.add('bg-white', 'text-indigo-700', 'shadow-sm');
-                    
-                    currentSpeed = parseFloat(target.getAttribute('data-speed'));
-                    if (isPlaying && synth) {
-                        togglePlay();
-                        togglePlay();
-                    }
+                }
+
+                // Clear Button
+                if (clearBtn) {
+                    clearBtn.addEventListener('click', () => {
+                        if (synth) synth.cancel();
+                        textInput.value = '';
+                        loadedChapters = [];
+                        chapterSelect.innerHTML = '<option value="all">Full Story</option>';
+                        localStorage.removeItem('sw_text');
+                        localStorage.removeItem('sw_chaps');
+                        aiInsightsPanel.classList.add('hidden');
+                        isPlaying = false;
+                        playIcon.className = "fas fa-play text-xl ml-1";
+                        progressFill.style.width = '0%';
+                        currentProgress.innerText = '0';
+                        totalChunks.innerText = '0';
+                        statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Cleared`;
+                    });
+                }
+
+                // AI Insights Button
+                if (aiInsightsBtn) {
+                    aiInsightsBtn.addEventListener('click', () => {
+                        if (!textInput.value.trim()) return;
+                        aiInsightsBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Analyzing...`;
+                        setTimeout(() => {
+                            aiInsightsPanel.classList.remove('hidden');
+                            document.getElementById('insight-summary').innerText = `Story text contains ${loadedChapters.length || 1} chapter(s) with rich narrative structure and clear dialogue formatting.`;
+                            document.getElementById('insight-mood').innerText = "Immersive & Engaging";
+                            aiInsightsBtn.innerHTML = `<i class="fas fa-sparkles"></i> AI Insights`;
+                        }, 800);
+                    });
+                }
+
+                // Speed Buttons
+                speedButtons.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        speedButtons.forEach(b => {
+                            b.classList.remove('bg-white', 'text-indigo-700', 'shadow-sm');
+                            b.classList.add('text-gray-500');
+                        });
+                        const t = e.currentTarget;
+                        t.classList.remove('text-gray-500');
+                        t.classList.add('bg-white', 'text-indigo-700', 'shadow-sm');
+                        currentSpeed = parseFloat(t.getAttribute('data-speed'));
+                    });
                 });
-            });
+
+            } catch (err) {
+                console.error("Initialization error:", err);
+            }
         });
     </script>
 </body>
 </html>
 ```eof
 
-### How to fix the blank screen on GitHub:
-
-1. On **GitHub.com**, navigate to your `index.html` file and click the **Pencil icon** (Edit).
-2. Select everything currently in the file and delete it.
-3. Copy the code block above from `<!DOCTYPE html>` to `</html>` (**do not** copy the ` 
-```html ` header or ` ```eof ` line).
-4. Paste it directly into `index.html`.
-5. Click **Commit changes**.
-6. Clear your browser cache or open an Incognito tab, then refresh `[https://artsy-jennie-rose.github.io/storyweaver/](https://artsy-jennie-rose.github.io/storyweaver/)`.
+### Important Check on GitHub Pages:
+If the page still appears blank after updating `index.html`:
+1. Go to your GitHub repository: `[https://github.com/artsy-jennie-rose/storyweaver](https://github.com/artsy-jennie-rose/storyweaver)`
+2. Click on **Settings** tab (at the top right of your repo).
+3. Scroll down the left sidebar and click **Pages**.
+4. Make sure **Source** is set to **Deploy from a branch**, and the branch selected is **`main`** (or `master`) and folder is set to **`/ (root)`**, then click **Save**.
+5. Click on the **Actions** tab at the top of your repository to verify that the build workflow finished with a green checkmark!
