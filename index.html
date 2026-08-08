@@ -512,10 +512,10 @@
                 });
             }
 
-            // Expand contractions into full words and strip quotes without using space substitutions
+            // Expand contractions into full words and strip quotation marks completely
             function cleanForSpeech(text) {
                 return text
-                    .replace(/[“”"„‟«»]/g, '') // Remove quotation marks completely
+                    .replace(/[“”"„‟«»]/g, '') // Remove quotation marks
                     .replace(/\b(they|we|I|he|she|you|it|that|who|there)['’]ll\b/gi, '$1 will')
                     .replace(/\b(they|we|I|he|she|you|it)['’]re\b/gi, '$1 are')
                     .replace(/\b(I|you|we|they|he|she|it)['’]m\b/gi, '$1 am')
@@ -546,7 +546,8 @@
                     .replace(/\bwhy['’]s\b/gi, 'why is')
                     .replace(/\bhow['’]s\b/gi, 'how is')
                     .replace(/\blet['’]s\b/gi, 'let us')
-                    .replace(/[‘’`ʼ']/g, ''); // Remove any remaining apostrophes entirely without leaving spaces
+                    .replace(/([a-zA-Z])['’](t|s)\b/gi, '$1$2')
+                    .replace(/[‘’`ʼ']/g, '');
             }
 
             function parseDialogueSegments(fullText) {
