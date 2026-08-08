@@ -512,6 +512,14 @@
                 });
             }
 
+            // Phonetic pre-processor to stop browsers from spelling out contractions letter by letter
+            function cleanTextForSpeech(text) {
+                return text
+                    .replace(/\b(they|we|I|he|she|you|it|that|who|there)['’]ll\b/gi, '$1ll') // they'll -> theyll
+                    .replace(/\b(had|did|do|does|is|are|was|were|have|has|had|would|could|should|can|will|won['’]t|shan['’]t|ain['’]t|n['’]t)\b/gi, (match) => match.replace(/['’]/g, ''))
+                    .replace(/([a-zA-Z])['’](t|s|re|ll|ve|m|d)\b/gi, '$1$2');
+            }
+
             function parseDialogueSegments(fullText) {
                 const regex = /([^"“”'‘’]+)|(["“”'‘’][^"“”'‘’]+["“”'‘’])/g;
                 let match;
@@ -530,7 +538,8 @@
                         if (maleHints > femaleHints) lastGender = 'male';
                         else if (femaleHints > maleHints) lastGender = 'female';
                         
-                        segments.push({ text: rawText, type: 'narrator', startIndex: startIndex, rawLength: rawText.length });
+                        let cleanNarrator = cleanTextForSpeech(rawText);
+                        segments.push({ text: cleanNarrator, type: 'narrator', startIndex: startIndex, rawLength: rawText.length });
                     } else if (match[2]) {
                         let peekGender = lastGender; 
                         let peekIndex = regex.lastIndex;
@@ -546,11 +555,10 @@
                             }
                         }
                         
-                        // Clean contractions like they'll -> theyll, hadn't -> hadnt
-                        let cleanSpeechText = rawText.replace(/([a-zA-Z])['’](t|s|re|ll|ve|m|d)\b/gi, '$1$2');
+                        let cleanSpeechText = cleanTextForSpeech(rawText);
                         
                         if (rawText.length < 4 && rawText.match(/^['‘’]/)) {
-                             segments.push({ text: rawText, type: 'narrator', startIndex: startIndex, rawLength: rawText.length });
+                             segments.push({ text: cleanSpeechText, type: 'narrator', startIndex: startIndex, rawLength: rawText.length });
                         } else {
                              segments.push({ text: cleanSpeechText, type: peekGender, startIndex: startIndex, rawLength: rawText.length });
                         }
@@ -560,7 +568,8 @@
                 }
                 
                 if (segments.length === 0 && fullText.trim().length > 0) {
-                    segments.push({ text: fullText, type: 'narrator', startIndex: 0, rawLength: fullText.length });
+                    let cleanFull = cleanTextForSpeech(fullText);
+                    segments.push({ text: cleanFull, type: 'narrator', startIndex: 0, rawLength: fullText.length });
                 }
                 
                 return segments;
