@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StoryWeaver - AI Audio Reader</title>
-    <!-- Tailwind CSS -->
+    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons -->
+    <!-- Load Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -141,10 +141,9 @@
         </div>
     </footer>
 
-    <!-- JSZip Library -->
+    <!-- Load JSZip for EPUB parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
-    <!-- App Logic -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const playBtn = document.getElementById('play-btn');
@@ -401,16 +400,3 @@
     </script>
 </body>
 </html>
-```eof
-
-### Two quick steps to test and verify on GitHub:
-
-1. **Check GitHub Actions Status:**
-   - In your GitHub repo (`artsy-jennie-rose/storyweaver`), click on the **Actions** tab near the top.
-   - Look at the top workflow run. Is there a **yellow spinning circle** or a **red X**? If it's a yellow circle, GitHub Pages is currently building your site and needs ~1-2 minutes to publish the update.
-
-2. **Bypass Browser Cache:**
-   - Once Actions shows a **green checkmark**, open `[https://artsy-jennie-rose.github.io/storyweaver/](https://artsy-jennie-rose.github.io/storyweaver/)`.
-   - On Mac: press **`Cmd + Shift + R`**
-   - On Windows: press **`Ctrl + F5`**
-   *(This forces your browser to download the fresh HTML instead of serving the broken cached version).*
