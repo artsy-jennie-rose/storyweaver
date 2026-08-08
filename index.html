@@ -546,6 +546,7 @@
                             }
                         }
                         
+                        // Clean contractions like they'll -> theyll, hadn't -> hadnt
                         let cleanSpeechText = rawText.replace(/([a-zA-Z])['’](t|s|re|ll|ve|m|d)\b/gi, '$1$2');
                         
                         if (rawText.length < 4 && rawText.match(/^['‘’]/)) {
@@ -664,7 +665,6 @@
 
                     if (isPlaying) {
                         if (isPaused) {
-                            // Always re-parse and check if user highlighted/clicked a NEW position while paused
                             utteranceQueue = parseDialogueSegments(textInput.value);
                             let cursorStart = textInput.selectionStart;
                             if (cursorStart !== undefined && cursorStart > 0) {
@@ -679,7 +679,6 @@
                             statusText.innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Reading`;
                             speakNextUtterance();
                         } else {
-                            // Pause
                             cancelForInterrupt = true;
                             synth.cancel();
                             isPaused = true;
@@ -688,7 +687,6 @@
                             statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-yellow-500"></i> Paused`;
                         }
                     } else {
-                        // Brand new start or start from user highlight/cursor selection
                         if (synth) synth.cancel();
                         isPlaying = true;
                         isPaused = false;
