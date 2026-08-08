@@ -126,7 +126,7 @@
         </div>
 
         <div class="flex-grow bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col min-h-[350px]">
-            <textarea id="text-input" class="w-full flex-grow p-5 resize-none outline-none text-gray-800 text-lg leading-relaxed placeholder-gray-400 min-h-[300px]" placeholder="Upload an AO3 .epub file, a Google Doc .txt file, or type/paste your story here..."></textarea>
+            <textarea id="text-input" class="w-full flex-grow p-5 resize-none outline-none text-gray-800 text-lg leading-relaxed placeholder-gray-400 min-h-[300px]" placeholder="Highlight text anywhere or upload an EPUB/TXT file to read..."></textarea>
         </div>
     </main>
 
@@ -352,7 +352,6 @@
 
             textInput.addEventListener('input', () => {
                 try { localStorage.setItem('sw_text', textInput.value); } catch(e){}
-                fullPlaybackReset();
             });
 
             function openTuning() { tuningModal.classList.remove('hidden'); tuningModal.classList.add('flex'); }
@@ -407,7 +406,10 @@
             }
 
             chapterSelect.addEventListener('change', (e) => {
-                fullPlaybackReset();
+                if (synth) synth.cancel();
+                isPlaying = false;
+                isPaused = false;
+                playIcon.className = "fas fa-play text-xl ml-1";
                 const val = e.target.value;
                 if (val === 'all') {
                     if (loadedChapters.length > 0) {
@@ -467,7 +469,9 @@
                     const file = e.target.files[0];
                     if (!file) return;
 
-                    fullPlaybackReset();
+                    if (synth) synth.cancel();
+                    isPlaying = false;
+                    isPaused = false;
                     loadedChapters = [];
 
                     if (file.name.toLowerCase().endsWith('.epub')) {
@@ -508,24 +512,12 @@
                 });
             }
 
-            function fullPlaybackReset() {
-                if (synth) synth.cancel();
-                isPlaying = false;
-                isPaused = false;
-                cancelForInterrupt = false;
-                playIcon.className = "fas fa-play text-xl ml-1";
-                textInput.readOnly = false;
-                if(textInput.setSelectionRange) textInput.setSelectionRange(0, 0);
-                utteranceQueue = [];
-                currentSegmentIndex = 0;
-                currentWordIndexInSegment = 0;
-            }
-
-            // Pre-processor to fix awkward pauses on plural possessives and ending punctuation
+            // Clean contractions and plurals so speech engine doesn't spell them out letter by letter
             function cleanTextForSpeech(text) {
                 return text
-                    .replace(/([a-zA-Z])s['’]\s/g, '$1s’ ') // Normalize plural possessive apostrophes
-                    .replace(/([a-zA-Z])[—–]([a-zA-Z])/g, '$1 — $2'); // Proper spacing around em-dashes
+                    .replace(/([a-zA-Z])['’](t|s|re|ll|ve|m|d)\b/gi, '$1$2') // Fix standard contractions like hadn't -> hadnt so it reads as a word
+                    .replace(/([a-zA-Z])s['’]\s/g, '$1s’ ') 
+                    .replace(/([a-zA-Z])[—–]([a-zA-Z])/g, '$1 — $2'); 
             }
 
             function parseDialogueSegments(fullText) {
@@ -580,10 +572,24 @@
                 return segments;
             }
 
+            function findSegmentAndWordIndex(charIndex, segments) {
+                for (let i = 0; i < segments.length; i++) {
+                    let seg = segments[i];
+                    if (charIndex >= seg.startIndex && charIndex <= seg.startIndex + seg.text.length) {
+                        return { segmentIndex: i, wordIndexInSegment: charIndex - seg.startIndex };
+                    }
+                }
+                return { segmentIndex: 0, wordIndexInSegment: 0 };
+            }
+
             function speakNextUtterance() {
                 if (!isPlaying || isPaused || currentSegmentIndex >= utteranceQueue.length) {
                     if (currentSegmentIndex >= utteranceQueue.length && utteranceQueue.length > 0) {
-                        fullPlaybackReset();
+                        if (synth) synth.cancel();
+                        isPlaying = false;
+                        isPaused = false;
+                        playIcon.className = "fas fa-play text-xl ml-1";
+                        textInput.readOnly = false;
                         statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Finished`;
                     }
                     return;
@@ -679,10 +685,24 @@
                             statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-yellow-500"></i> Paused`;
                         }
                     } else {
-                        fullPlaybackReset();
+                        if (synth) synth.cancel();
                         isPlaying = true;
+                        isPaused = false;
+                        cancelForInterrupt = false;
                         textInput.readOnly = true; 
+                        
                         utteranceQueue = parseDialogueSegments(textInput.value);
+                        
+                        let cursorStart = textInput.selectionStart;
+                        if (cursorStart !== undefined && cursorStart > 0 && cursorStart < textInput.value.length) {
+                            let pos = findSegmentAndWordIndex(cursorStart, utteranceQueue);
+                            currentSegmentIndex = pos.segmentIndex;
+                            currentWordIndexInSegment = pos.wordIndexInSegment;
+                        } else {
+                            currentSegmentIndex = 0;
+                            currentWordIndexInSegment = 0;
+                        }
+
                         playIcon.className = "fas fa-pause text-xl";
                         statusText.innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Reading`;
                         speakNextUtterance();
@@ -692,8 +712,12 @@
 
             if (clearBtn) {
                 clearBtn.addEventListener('click', () => {
-                    fullPlaybackReset();
+                    if (synth) synth.cancel();
+                    isPlaying = false;
+                    isPaused = false;
+                    cancelForInterrupt = false;
                     textInput.value = '';
+                    textInput.readOnly = false;
                     loadedChapters = [];
                     chapterSelect.innerHTML = '<option value="all">Full Story</option>';
                     localStorage.removeItem('sw_text');
