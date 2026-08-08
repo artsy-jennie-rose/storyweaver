@@ -13,7 +13,6 @@
         textarea::-webkit-scrollbar-track { background: #f8fafc; border-radius: 4px; }
         textarea::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         textarea::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        /* Browser handles visual highlighting */
         textarea::selection { background-color: #fde047; color: #000; }
         .toggle-checkbox:checked { right: 0; border-color: #6366f1; }
         .toggle-checkbox:checked + .toggle-label { background-color: #6366f1; }
@@ -48,10 +47,10 @@
 
                 <div id="smart-voice-options" style="display: none;" class="items-center gap-3 fade-in flex-wrap">
                     <div class="flex items-center gap-1">
-                        <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">Male (Dialogue)</span>
+                        <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">Male (Gruff/Deep)</span>
                         <div class="relative">
                             <select id="smart-male-voice" class="appearance-none bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
-                                <option value="default">Loading Male Voices...</option>
+                                <option value="default">Loading Voices...</option>
                             </select>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-blue-600">
                                 <i class="fas fa-chevron-down text-xs"></i>
@@ -60,10 +59,10 @@
                     </div>
                     
                     <div class="flex items-center gap-1">
-                        <span class="text-xs font-semibold text-pink-600 uppercase tracking-wide">Female (Dialogue)</span>
+                        <span class="text-xs font-semibold text-pink-600 uppercase tracking-wide">Female (Optimistic)</span>
                         <div class="relative">
                             <select id="smart-female-voice" class="appearance-none bg-pink-50 border border-pink-200 text-pink-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
-                                <option value="default">Loading Female Voices...</option>
+                                <option value="default">Loading Voices...</option>
                             </select>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-pink-600">
                                 <i class="fas fa-chevron-down text-xs"></i>
@@ -200,59 +199,69 @@
             let currentSegmentIndex = 0;
             let currentWordIndexInSegment = 0;
 
-            // Load ACTUAL OS Voices intelligently
             function loadVoices() {
                 if (!synth) return;
-                const voices = synth.getVoices();
-                if (voices && voices.length > 0 && voiceSelect) {
+                let rawVoices = synth.getVoices();
+                if (rawVoices && rawVoices.length > 0 && voiceSelect) {
                     voiceSelect.innerHTML = '';
                     smartMaleVoiceSelect.innerHTML = '';
                     smartFemaleVoiceSelect.innerHTML = '';
                     
+                    // Score and sort voices so the best neural/natural/English voices float to the top
+                    let voices = rawVoices.filter(v => {
+                        let n = v.name.toLowerCase();
+                        return !n.includes("trinoids") && !n.includes("zarvox") && !n.includes("boing") && !n.includes("bubbles") && !n.includes("whisper");
+                    }).map(v => {
+                        let score = 0;
+                        let n = v.name.toLowerCase();
+                        let l = v.lang.toLowerCase();
+                        
+                        if (l.startsWith('en')) score += 200; // Prioritize English
+                        if (n.includes('natural') || n.includes('neural')) score += 150;
+                        if (n.includes('premium') || n.includes('enhanced')) score += 120;
+                        if (n.includes('google') || !v.localService) score += 100;
+                        
+                        return { voice: v, score: score };
+                    }).sort((a, b) => b.score - a.score);
+
                     let maleCandidateAdded = false;
                     let femaleCandidateAdded = false;
                     
-                    voices.forEach((v, index) => {
-                        // Skip bloated/novelty OS voices if possible
-                        if(v.name.includes("Trinoids") || v.name.includes("Zarvox") || v.name.includes("Boing") || v.name.includes("Bubbles")) return;
+                    voices.forEach((item) => {
+                        let v = item.voice;
+                        let n = v.name.toLowerCase();
+                        let vNameStr = `${v.name} (${v.lang})${item.score >= 200 ? ' ⭐' : ''}`;
                         
-                        const vNameStr = `${v.name} (${v.lang})`;
-                        
-                        // All voices available for main narrator
                         const opt1 = document.createElement('option');
                         opt1.value = v.name; opt1.textContent = vNameStr;
                         voiceSelect.appendChild(opt1);
 
-                        // Try to roughly categorize for Smart Voices based on common internal metadata names
-                        const isLikelyMale = v.name.includes("David") || v.name.includes("Mark") || v.name.includes("Alex") || v.name.includes("Daniel") || v.name.includes("Fred") || v.name.includes("Oliver");
-                        const isLikelyFemale = v.name.includes("Zira") || v.name.includes("Samantha") || v.name.includes("Victoria") || v.name.includes("Karen") || v.name.includes("Tessa");
+                        // Archetype heuristics for Southern Gruff Man vs Optimistic Young Woman
+                        const isGruffMale = n.includes("david") || n.includes("mark") || n.includes("george") || n.includes("oliver") || n.includes("ryan") || n.includes("stefan") || n.includes("james");
+                        const isUpbeatFemale = n.includes("samantha") || n.includes("zira") || n.includes("victoria") || n.includes("karen") || n.includes("siri") || n.includes("jenny") || n.includes("aria") || n.includes("ava") || n.includes("emma");
                         
-                        // Add to Male Dropdown
                         const optMale = document.createElement('option');
                         optMale.value = v.name; optMale.textContent = vNameStr;
                         smartMaleVoiceSelect.appendChild(optMale);
-                        if(isLikelyMale && !maleCandidateAdded) {
+                        if(isGruffMale && !maleCandidateAdded) {
                             smartMaleVoiceSelect.value = v.name;
                             maleCandidateAdded = true;
                         }
                         
-                        // Add to Female Dropdown
                         const optFemale = document.createElement('option');
                         optFemale.value = v.name; optFemale.textContent = vNameStr;
                         smartFemaleVoiceSelect.appendChild(optFemale);
-                        if(isLikelyFemale && !femaleCandidateAdded) {
+                        if(isUpbeatFemale && !femaleCandidateAdded) {
                             smartFemaleVoiceSelect.value = v.name;
                             femaleCandidateAdded = true;
                         }
                     });
                     
-                    // Fallbacks if no clean gender matches were found
                     if(!maleCandidateAdded && smartMaleVoiceSelect.options.length > 0) smartMaleVoiceSelect.selectedIndex = 0;
                     if(!femaleCandidateAdded && smartFemaleVoiceSelect.options.length > 1) smartFemaleVoiceSelect.selectedIndex = 1;
                 }
             }
             
-            // Trigger load once ready
             if (synth.getVoices().length > 0) { loadVoices(); } 
             else if (synth.onvoiceschanged !== undefined) { synth.onvoiceschanged = loadVoices; }
 
@@ -402,9 +411,7 @@
                 currentWordIndexInSegment = 0;
             }
 
-            // Advanced Dialogue Parser (Handles straight quotes, smart quotes, and single quotes)
             function parseDialogueSegments(fullText) {
-                // Regex matches text inside standard/smart quotes OR single quotes that behave like dialogue wrappers
                 const regex = /([^"“”'‘’]+)|(["“”'‘’][^"“”'‘’]+["“”'‘’])/g;
                 let match;
                 let segments = [];
@@ -417,7 +424,6 @@
                     let rawText = match[0];
                     
                     if (match[1]) {
-                        // Narrator text analysis
                         let maleHints = (rawText.match(malePronouns) || []).length;
                         let femaleHints = (rawText.match(femalePronouns) || []).length;
                         if (maleHints > femaleHints) lastGender = 'male';
@@ -425,10 +431,7 @@
                         
                         segments.push({ text: rawText, type: 'narrator', startIndex: startIndex });
                     } else if (match[2]) {
-                        // Quotes found
                         let peekGender = lastGender; 
-                        
-                        // Look at the next few words AFTER the quote closes
                         let peekIndex = regex.lastIndex;
                         let peekText = fullText.substring(peekIndex, peekIndex + 80);
                         
@@ -442,8 +445,6 @@
                             }
                         }
                         
-                        // Treat single quotes like apostrophes inside words? 
-                        // If it's just 's or similar, treat as narrator to avoid glitching.
                         if (rawText.length < 4 && rawText.match(/^['‘’]/)) {
                              segments.push({ text: rawText, type: 'narrator', startIndex: startIndex });
                         } else {
@@ -497,7 +498,6 @@
                 const selectedV = voices.find(v => v.name === selectedVoiceName);
                 if (selectedV) utter.voice = selectedV;
 
-                // Sync Highlight
                 utter.onboundary = (e) => {
                     if (e.name !== 'word') return;
                     let actualPosInSegment = offset + e.charIndex;
