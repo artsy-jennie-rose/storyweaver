@@ -260,6 +260,7 @@
             
             let utteranceQueue = [];
             let currentSegmentIndex = 0;
+            let currentWordIndexInSegment = 0;
 
             let pNarrator = 1.0;
             let pMale = 0.85; 
@@ -511,10 +512,9 @@
                 });
             }
 
-            // Clean speech text without disrupting normal text box editing or selection
             function cleanForSpeech(text) {
                 return text
-                    .replace(/[“”"„‟«»]/g, '') // Remove quotation marks so "quote" isn't spoken
+                    .replace(/[“”"„‟«»]/g, '') 
                     .replace(/\b(they|we|I|he|she|you|it|that|who|there)['’]ll\b/gi, '$1 will')
                     .replace(/\b(they|we|I|he|she|you|it)['’]re\b/gi, '$1 are')
                     .replace(/\b(I|you|we|they|he|she|it)['’]m\b/gi, '$1 am')
@@ -534,7 +534,6 @@
                 const malePronouns = /\b(he|him|his|man|boy|gentleman|sir|father|brother|son|uncle|king|prince)\b/i;
                 const femalePronouns = /\b(she|her|hers|woman|girl|lady|madam|mother|sister|daughter|aunt|queen|princess)\b/i;
                 let lastGender = 'unknown';
-                let currentIndex = 0;
 
                 while ((match = regex.exec(fullText)) !== null) {
                     let rawText = match[0];
@@ -546,7 +545,12 @@
                         if (maleHints > femaleHints) lastGender = 'male';
                         else if (femaleHints > maleHints) lastGender = 'female';
                         
-                        segments.push({ text: cleanForSpeech(rawText), type: 'narrator', startIndex: startIndex, length: rawText.length });
+                        segments.push({ 
+                            text: cleanForSpeech(rawText), 
+                            type: 'narrator', 
+                            startIndex: startIndex, 
+                            length: rawText.length 
+                        });
                     } else if (match[2]) {
                         let peekGender = lastGender; 
                         let peekIndex = regex.lastIndex;
@@ -562,26 +566,36 @@
                             }
                         }
                         
-                        segments.push({ text: cleanForSpeech(rawText), type: peekGender, startIndex: startIndex, length: rawText.length });
+                        segments.push({ 
+                            text: cleanForSpeech(rawText), 
+                            type: peekGender, 
+                            startIndex: startIndex, 
+                            length: rawText.length 
+                        });
                         lastGender = peekGender;
                     }
                 }
                 
                 if (segments.length === 0 && fullText.trim().length > 0) {
-                    segments.push({ text: cleanForSpeech(fullText), type: 'narrator', startIndex: 0, length: fullText.length });
+                    segments.push({ 
+                        text: cleanForSpeech(fullText), 
+                        type: 'narrator', 
+                        startIndex: 0, 
+                        length: fullText.length 
+                    });
                 }
                 
                 return segments;
             }
 
-            function findSegmentIndexFromCursor(cursorPos, segments) {
+            function findSegmentAndWordIndex(charIndex, segments) {
                 for (let i = 0; i < segments.length; i++) {
                     let seg = segments[i];
-                    if (cursorPos >= seg.startIndex && cursorPos <= seg.startIndex + seg.length) {
-                        return i;
+                    if (charIndex >= seg.startIndex && charIndex <= seg.startIndex + seg.length) {
+                        return { segmentIndex: i, wordIndexInSegment: Math.min(charIndex - seg.startIndex, seg.text.length) };
                     }
                 }
-                return 0;
+                return { segmentIndex: 0, wordIndexInSegment: 0 };
             }
 
             function speakNextUtterance() {
@@ -598,7 +612,17 @@
                 }
 
                 let segment = utteranceQueue[currentSegmentIndex];
-                let utter = new SpeechSynthesisUtterance(segment.text);
+                let offset = currentWordIndexInSegment;
+                
+                if (offset >= segment.text.length) {
+                    currentSegmentIndex++;
+                    currentWordIndexInSegment = 0;
+                    speakNextUtterance();
+                    return;
+                }
+
+                let textToSpeak = segment.text.substring(offset);
+                let utter = new SpeechSynthesisUtterance(textToSpeak);
                 utter.rate = currentSpeed;
                 
                 let selectedVoiceName;
@@ -624,15 +648,32 @@
                 const selectedV = voices.find(v => v.name === selectedVoiceName);
                 if (selectedV) utter.voice = selectedV;
 
+                utter.onboundary = (e) => {
+                    if (e.name !== 'word') return;
+                    let actualPosInSegment = offset + e.charIndex;
+                    currentWordIndexInSegment = actualPosInSegment;
+                    let absStart = segment.startIndex + actualPosInSegment;
+                    let len = e.charLength;
+                    if (!len) {
+                        let m = segment.text.substring(actualPosInSegment).match(/^[^\s]+/);
+                        len = m ? m[0].length : 1;
+                    }
+                    
+                    textInput.focus();
+                    if(textInput.setSelectionRange) textInput.setSelectionRange(absStart, absStart + len);
+                };
+
                 utter.onend = () => {
                     if (cancelForInterrupt) { cancelForInterrupt = false; return; }
                     currentSegmentIndex++;
+                    currentWordIndexInSegment = 0;
                     speakNextUtterance();
                 };
                 
                 utter.onerror = () => {
                     if (cancelForInterrupt) { cancelForInterrupt = false; return; }
                     currentSegmentIndex++;
+                    currentWordIndexInSegment = 0;
                     speakNextUtterance();
                 };
 
@@ -646,11 +687,12 @@
 
                     if (isPlaying) {
                         if (isPaused) {
-                            // Check if user selected a new highlight position while paused
                             utteranceQueue = parseDialogueSegments(textInput.value);
                             let cursorPos = textInput.selectionStart;
                             if (cursorPos !== undefined && cursorPos > 0) {
-                                currentSegmentIndex = findSegmentIndexFromCursor(cursorPos, utteranceQueue);
+                                let pos = findSegmentAndWordIndex(cursorPos, utteranceQueue);
+                                currentSegmentIndex = pos.segmentIndex;
+                                currentWordIndexInSegment = pos.wordIndexInSegment;
                             }
 
                             isPaused = false;
@@ -677,9 +719,12 @@
                         
                         let cursorPos = textInput.selectionStart;
                         if (cursorPos !== undefined && cursorPos > 0) {
-                            currentSegmentIndex = findSegmentIndexFromCursor(cursorPos, utteranceQueue);
+                            let pos = findSegmentAndWordIndex(cursorPos, utteranceQueue);
+                            currentSegmentIndex = pos.segmentIndex;
+                            currentWordIndexInSegment = pos.wordIndexInSegment;
                         } else {
                             currentSegmentIndex = 0;
+                            currentWordIndexInSegment = 0;
                         }
 
                         playIcon.className = "fas fa-pause text-xl";
