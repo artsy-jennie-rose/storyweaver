@@ -512,10 +512,10 @@
                 });
             }
 
-            // Full Dictionary Expansion to guarantee speech engines pronounce contractions properly
+            // Clean text specifically for the utterance audio stream (quotes removed, contractions fully expanded)
             function cleanForSpeech(text) {
                 return text
-                    .replace(/[“”"„‟«»]/g, '') // Remove quotation marks
+                    .replace(/[“”"„‟«»]/g, '') 
                     .replace(/\bthey['’]ll\b/gi, 'they will')
                     .replace(/\bwe['’]ll\b/gi, 'we will')
                     .replace(/\bI['’]ll\b/gi, 'I will')
@@ -563,11 +563,12 @@
                     .replace(/\bwhy['’]s\b/gi, 'why is')
                     .replace(/\bhow['’]s\b/gi, 'how is')
                     .replace(/\blet['’]s\b/gi, 'let us')
-                    .replace(/[‘’`ʼ']/g, ''); // Remove any remaining apostrophes
+                    .replace(/[‘’`ʼ']/g, ''); // Safely remove remaining apostrophes without inserting spaces
             }
 
             function parseDialogueSegments(fullText) {
-                const regex = /([^"“”'‘’]+)|(["“”'‘’][^"“”'‘’]+["“”'‘’])/g;
+                // Parse segments using the exact original text so character indices match textarea 1:1
+                const regex = /([^"“”]+)|(["“”][^"“”]+["“”])/g;
                 let match;
                 let segments = [];
                 const malePronouns = /\b(he|him|his|man|boy|gentleman|sir|father|brother|son|uncle|king|prince)\b/i;
@@ -585,7 +586,7 @@
                         else if (femaleHints > maleHints) lastGender = 'female';
                         
                         segments.push({ 
-                            text: cleanForSpeech(rawText), 
+                            text: rawText, // Keep original text for index tracking
                             type: 'narrator', 
                             startIndex: startIndex, 
                             length: rawText.length 
@@ -606,7 +607,7 @@
                         }
                         
                         segments.push({ 
-                            text: cleanForSpeech(rawText), 
+                            text: rawText, // Keep original text for index tracking
                             type: peekGender, 
                             startIndex: startIndex, 
                             length: rawText.length 
@@ -617,7 +618,7 @@
                 
                 if (segments.length === 0 && fullText.trim().length > 0) {
                     segments.push({ 
-                        text: cleanForSpeech(fullText), 
+                        text: fullText, 
                         type: 'narrator', 
                         startIndex: 0, 
                         length: fullText.length 
@@ -651,16 +652,17 @@
                 }
 
                 let segment = utteranceQueue[currentSegmentIndex];
-                let textToSpeak = segment.text.substring(currentWordIndex);
+                let subText = segment.text.substring(currentWordIndex);
+                let spokenText = cleanForSpeech(subText); // Expand contractions and remove quotes at utterance level
                 
-                if (!textToSpeak.trim()) {
+                if (!spokenText.trim()) {
                     currentSegmentIndex++;
                     currentWordIndex = 0;
                     speakNextUtterance();
                     return;
                 }
 
-                let utter = new SpeechSynthesisUtterance(textToSpeak);
+                let utter = new SpeechSynthesisUtterance(spokenText);
                 utter.rate = currentSpeed;
                 
                 let selectedVoiceName;
