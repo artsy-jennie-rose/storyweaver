@@ -260,7 +260,6 @@
             
             let utteranceQueue = [];
             let currentSegmentIndex = 0;
-            let currentWordIndexInSegment = 0;
 
             let pNarrator = 1.0;
             let pMale = 0.85; 
@@ -512,12 +511,10 @@
                 });
             }
 
-            // Ultimate Phonetic Expansion Dictionary for Contractions & Quote Stripping
-            function phoneticPreprocess(text) {
+            // Clean speech synthesis text without mutating or restricting typing
+            function prepareSpeechText(text) {
                 return text
-                    // Remove all quotation marks entirely so speech engine never says "quote"
-                    .replace(/[“”"„‟«»]/g, '')
-                    // Expand all contractions phonetically so speech engine never spells out letters like 'll or n't
+                    .replace(/[“”"„‟«»]/g, '') // Remove quotation marks so "quote" isn't spoken
                     .replace(/\b(they|we|I|he|she|you|it|that|who|there)['’]ll\b/gi, '$1 will')
                     .replace(/\b(they|we|I|he|she|you|it)['’]re\b/gi, '$1 are')
                     .replace(/\b(I|you|we|they|he|she|it)['’]m\b/gi, '$1 am')
@@ -526,7 +523,6 @@
                     .replace(/\bcan['’]t\b/gi, 'cannot')
                     .replace(/\bwon['’]t\b/gi, 'will not')
                     .replace(/\bshan['’]t\b/gi, 'shall not')
-                    .replace(/\bain['’]t\b/gi, 'is not')
                     .replace(/\bdon['’]t\b/gi, 'do not')
                     .replace(/\bdoesn['’]t\b/gi, 'does not')
                     .replace(/\bdidn['’]t\b/gi, 'did not')
@@ -537,18 +533,13 @@
                     .replace(/\bhasn['’]t\b/gi, 'has not')
                     .replace(/\bhaven['’]t\b/gi, 'have not')
                     .replace(/\bhadn['’]t\b/gi, 'had not')
-                    .replace(/\bwon['’]t\b/gi, 'will not')
                     .replace(/\bwouldn['’]t\b/gi, 'would not')
                     .replace(/\bshouldn['’]t\b/gi, 'should not')
                     .replace(/\bcouldn['’]t\b/gi, 'could not')
-                    .replace(/\bmightn['’]t\b/gi, 'might not')
-                    .replace(/\bmustn['’]t\b/gi, 'must not')
-                    // Clean any remaining apostrophes safely as spaces
                     .replace(/[‘’`ʼ]/g, ' ');
             }
 
             function parseDialogueSegments(fullText) {
-                // Regex to split dialogue blocks while ignoring quotation marks
                 const regex = /([^"“”'‘’]+)|(["“”'‘’][^"“”'‘’]+["“”'‘’])/g;
                 let match;
                 let segments = [];
@@ -557,17 +548,14 @@
                 let lastGender = 'unknown';
 
                 while ((match = regex.exec(fullText)) !== null) {
-                    let startIndex = match.index;
                     let rawText = match[0];
-                    
                     if (match[1]) {
                         let maleHints = (rawText.match(malePronouns) || []).length;
                         let femaleHints = (rawText.match(femalePronouns) || []).length;
                         if (maleHints > femaleHints) lastGender = 'male';
                         else if (femaleHints > maleHints) lastGender = 'female';
                         
-                        let speechText = phoneticPreprocess(rawText);
-                        segments.push({ text: speechText, type: 'narrator', startIndex: startIndex, rawLength: rawText.length });
+                        segments.push({ text: prepareSpeechText(rawText), type: 'narrator' });
                     } else if (match[2]) {
                         let peekGender = lastGender; 
                         let peekIndex = regex.lastIndex;
@@ -583,28 +571,16 @@
                             }
                         }
                         
-                        let speechText = phoneticPreprocess(rawText);
-                        segments.push({ text: speechText, type: peekGender, startIndex: startIndex, rawLength: rawText.length });
+                        segments.push({ text: prepareSpeechText(rawText), type: peekGender });
                         lastGender = peekGender;
                     }
                 }
                 
                 if (segments.length === 0 && fullText.trim().length > 0) {
-                    let speechText = phoneticPreprocess(fullText);
-                    segments.push({ text: speechText, type: 'narrator', startIndex: 0, rawLength: fullText.length });
+                    segments.push({ text: prepareSpeechText(fullText), type: 'narrator' });
                 }
                 
                 return segments;
-            }
-
-            function findSegmentAndWordIndex(charIndex, segments) {
-                for (let i = 0; i < segments.length; i++) {
-                    let seg = segments[i];
-                    if (charIndex >= seg.startIndex && charIndex <= seg.startIndex + seg.rawLength) {
-                        return { segmentIndex: i, wordIndexInSegment: Math.min(charIndex - seg.startIndex, seg.text.length) };
-                    }
-                }
-                return { segmentIndex: 0, wordIndexInSegment: 0 };
             }
 
             function speakNextUtterance() {
@@ -621,17 +597,7 @@
                 }
 
                 let segment = utteranceQueue[currentSegmentIndex];
-                let offset = currentWordIndexInSegment;
-                
-                if (offset >= segment.text.length) {
-                    currentSegmentIndex++;
-                    currentWordIndexInSegment = 0;
-                    speakNextUtterance();
-                    return;
-                }
-
-                let textToSpeak = segment.text.substring(offset);
-                let utter = new SpeechSynthesisUtterance(textToSpeak);
+                let utter = new SpeechSynthesisUtterance(segment.text);
                 utter.rate = currentSpeed;
                 
                 let selectedVoiceName;
@@ -657,32 +623,15 @@
                 const selectedV = voices.find(v => v.name === selectedVoiceName);
                 if (selectedV) utter.voice = selectedV;
 
-                utter.onboundary = (e) => {
-                    if (e.name !== 'word') return;
-                    let actualPosInSegment = offset + e.charIndex;
-                    currentWordIndexInSegment = actualPosInSegment;
-                    let absStart = segment.startIndex + actualPosInSegment;
-                    let len = e.charLength;
-                    if (!len) {
-                        let m = segment.text.substring(actualPosInSegment).match(/^[^\s]+/);
-                        len = m ? m[0].length : 1;
-                    }
-                    
-                    textInput.focus();
-                    if(textInput.setSelectionRange) textInput.setSelectionRange(absStart, absStart + len);
-                };
-
                 utter.onend = () => {
                     if (cancelForInterrupt) { cancelForInterrupt = false; return; }
                     currentSegmentIndex++;
-                    currentWordIndexInSegment = 0;
                     speakNextUtterance();
                 };
                 
-                utter.onerror = (e) => {
+                utter.onerror = () => {
                     if (cancelForInterrupt) { cancelForInterrupt = false; return; }
                     currentSegmentIndex++;
-                    currentWordIndexInSegment = 0;
                     speakNextUtterance();
                 };
 
@@ -696,14 +645,6 @@
 
                     if (isPlaying) {
                         if (isPaused) {
-                            utteranceQueue = parseDialogueSegments(textInput.value);
-                            let cursorStart = textInput.selectionStart;
-                            if (cursorStart !== undefined && cursorStart > 0) {
-                                let pos = findSegmentAndWordIndex(cursorStart, utteranceQueue);
-                                currentSegmentIndex = pos.segmentIndex;
-                                currentWordIndexInSegment = pos.wordIndexInSegment;
-                            }
-
                             isPaused = false;
                             textInput.readOnly = true; 
                             playIcon.className = "fas fa-pause text-xl";
@@ -725,16 +666,7 @@
                         textInput.readOnly = true; 
                         
                         utteranceQueue = parseDialogueSegments(textInput.value);
-                        
-                        let cursorStart = textInput.selectionStart;
-                        if (cursorStart !== undefined && cursorStart > 0) {
-                            let pos = findSegmentAndWordIndex(cursorStart, utteranceQueue);
-                            currentSegmentIndex = pos.segmentIndex;
-                            currentWordIndexInSegment = pos.wordIndexInSegment;
-                        } else {
-                            currentSegmentIndex = 0;
-                            currentWordIndexInSegment = 0;
-                        }
+                        currentSegmentIndex = 0;
 
                         playIcon.className = "fas fa-pause text-xl";
                         statusText.innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Reading`;
