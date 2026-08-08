@@ -511,35 +511,23 @@
                 });
             }
 
-            // Clean speech synthesis text without mutating or restricting typing
-            function prepareSpeechText(text) {
+            // Clean speech synthesis text completely to prevent quotation voiceouts and letter spelling
+            function sanitizeForSpeech(text) {
                 return text
-                    .replace(/[“”"„‟«»]/g, '') // Remove quotation marks so "quote" isn't spoken
-                    .replace(/\b(they|we|I|he|she|you|it|that|who|there)['’]ll\b/gi, '$1 will')
-                    .replace(/\b(they|we|I|he|she|you|it)['’]re\b/gi, '$1 are')
-                    .replace(/\b(I|you|we|they|he|she|it)['’]m\b/gi, '$1 am')
-                    .replace(/\b(I|you|we|they|he|she|it)['’]ve\b/gi, '$1 have')
-                    .replace(/\b(I|you|he|she|we|they)['’]d\b/gi, '$1 would')
-                    .replace(/\bcan['’]t\b/gi, 'cannot')
-                    .replace(/\bwon['’]t\b/gi, 'will not')
-                    .replace(/\bshan['’]t\b/gi, 'shall not')
-                    .replace(/\bdon['’]t\b/gi, 'do not')
-                    .replace(/\bdoesn['’]t\b/gi, 'does not')
-                    .replace(/\bdidn['’]t\b/gi, 'did not')
-                    .replace(/\bisn['’]t\b/gi, 'is not')
-                    .replace(/\baren['’]t\b/gi, 'are not')
-                    .replace(/\bwasn['’]t\b/gi, 'was not')
-                    .replace(/\bweren['’]t\b/gi, 'were not')
-                    .replace(/\bhasn['’]t\b/gi, 'has not')
-                    .replace(/\bhaven['’]t\b/gi, 'have not')
-                    .replace(/\bhadn['’]t\b/gi, 'had not')
-                    .replace(/\bwouldn['’]t\b/gi, 'would not')
-                    .replace(/\bshouldn['’]t\b/gi, 'should not')
-                    .replace(/\bcouldn['’]t\b/gi, 'could not')
-                    .replace(/[‘’`ʼ]/g, ' ');
+                    .replace(/[“”"„‟«»]/g, '') // Remove double quotes
+                    .replace(/([a-zA-Z])['’](ll)\b/gi, '$1 will')
+                    .replace(/([a-zA-Z])['’](re)\b/gi, '$1 are')
+                    .replace(/([a-zA-Z])['’](m)\b/gi, '$1 am')
+                    .replace(/([a-zA-Z])['’](ve)\b/gi, '$1 have')
+                    .replace(/([a-zA-Z])['’](d)\b/gi, '$1 would')
+                    .replace(/can['’]t\b/gi, 'cannot')
+                    .replace(/won['’]t\b/gi, 'will not')
+                    .replace(/([a-zA-Z])['’](t|s)\b/gi, '$1$2') // Fix hadn't, don't, etc.
+                    .replace(/[‘’`ʼ]/g, ' '); // Replace remaining apostrophes with space
             }
 
             function parseDialogueSegments(fullText) {
+                // Split by quotes to assign smart dialogue voices
                 const regex = /([^"“”'‘’]+)|(["“”'‘’][^"“”'‘’]+["“”'‘’])/g;
                 let match;
                 let segments = [];
@@ -555,7 +543,7 @@
                         if (maleHints > femaleHints) lastGender = 'male';
                         else if (femaleHints > maleHints) lastGender = 'female';
                         
-                        segments.push({ text: prepareSpeechText(rawText), type: 'narrator' });
+                        segments.push({ text: sanitizeForSpeech(rawText), type: 'narrator' });
                     } else if (match[2]) {
                         let peekGender = lastGender; 
                         let peekIndex = regex.lastIndex;
@@ -571,13 +559,13 @@
                             }
                         }
                         
-                        segments.push({ text: prepareSpeechText(rawText), type: peekGender });
+                        segments.push({ text: sanitizeForSpeech(rawText), type: peekGender });
                         lastGender = peekGender;
                     }
                 }
                 
                 if (segments.length === 0 && fullText.trim().length > 0) {
-                    segments.push({ text: prepareSpeechText(fullText), type: 'narrator' });
+                    segments.push({ text: sanitizeForSpeech(fullText), type: 'narrator' });
                 }
                 
                 return segments;
