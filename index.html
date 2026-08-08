@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StoryWeaver - AI Audio Reader</title>
-    <!-- Load Tailwind CSS -->
+    <!-- Tailwind CSS -->
     <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)">
-    <!-- Load JSZip for fast, reliable EPUB extraction -->
+    <!-- JSZip for EPUB Extraction -->
     <script src="[https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js](https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js)"></script>
     
     <style>
@@ -62,26 +63,11 @@
                     <div class="flex items-center gap-1">
                         <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">Male</span>
                         <div class="relative">
-                            <select id="smart-male-voice" class="appearance-none bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-52 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
+                            <select id="smart-male-voice" class="appearance-none bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
                                 <option value="cooper">Cooper (Gruff Southern)</option>
-                                <option value="charon">Charon (Informative)</option>
                                 <option value="fenrir" selected>Fenrir (Excitable)</option>
+                                <option value="charon">Charon (Informative)</option>
                                 <option value="orus">Orus (Firm)</option>
-                                <option value="achird">Achird (Friendly)</option>
-                                <option value="algenib">Algenib (Gravelly)</option>
-                                <option value="algieba">Algieba (Smooth)</option>
-                                <option value="alnilam">Alnilam (Firm)</option>
-                                <option value="enceladus">Enceladus (Breathy)</option>
-                                <option value="iapetus">Iapetus (Clear)</option>
-                                <option value="puck">Puck (Upbeat)</option>
-                                <option value="rasalgethi">Rasalgethi (Informative)</option>
-                                <option value="sadachbia">Sadachbia (Lively)</option>
-                                <option value="sadaltager">Sadaltager (Knowledgeable)</option>
-                                <option value="schedar">Schedar (Even)</option>
-                                <option value="umbriel">Umbriel (Easy-going)</option>
-                                <option value="zubenelgenubi">Zubenelgenubi (Casual)</option>
-                                <option value="achernar">Achernar (Soft)</option>
-                                <option value="gacrux">Gacrux (Mature)</option>
                             </select>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-blue-600">
                                 <i class="fas fa-chevron-down text-xs"></i>
@@ -93,21 +79,11 @@
                     <div class="flex items-center gap-1">
                         <span class="text-xs font-semibold text-pink-600 uppercase tracking-wide">Female</span>
                         <div class="relative">
-                            <select id="smart-female-voice" class="appearance-none bg-pink-50 border border-pink-200 text-pink-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-52 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
-                                <option value="leda" selected>Lucy (Bright & Earnest - Fallout)</option>
+                            <select id="smart-female-voice" class="appearance-none bg-pink-50 border border-pink-200 text-pink-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
+                                <option value="leda" selected>Lucy (Bright & Earnest)</option>
                                 <option value="aoede">Aoede (Breezy)</option>
-                                <option value="kore">Kore (Firm)</option>
                                 <option value="zephyr">Zephyr (Bright)</option>
-                                <option value="achernar">Achernar (Soft)</option>
-                                <option value="autonoe">Autonoe (Bright)</option>
-                                <option value="callirrhoe">Callirrhoe (Easy)</option>
-                                <option value="despina">Despina (Smooth)</option>
-                                <option value="erinome">Erinome (Clear)</option>
-                                <option value="gacrux">Gacrux (Mature)</option>
-                                <option value="laomedeia">Laomedeia (Upbeat)</option>
-                                <option value="pulcherrima">Pulcherrima (Forward)</option>
-                                <option value="sulafat">Sulafat (Warm)</option>
-                                <option value="vindemiatrix">Vindemiatrix (Gentle)</option>
+                                <option value="kore">Kore (Firm)</option>
                             </select>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-pink-600">
                                 <i class="fas fa-chevron-down text-xs"></i>
@@ -121,42 +97,8 @@
                 <div class="flex items-center gap-1">
                     <span id="narrator-label" class="hidden text-xs font-semibold text-gray-500 uppercase tracking-wide fade-in">Narrator</span>
                     <div class="relative">
-                        <select id="voice-select" class="appearance-none bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-52 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
-                            <optgroup label="Female Voices">
-                                <option value="leda" selected>Lucy (Bright & Earnest - Fallout)</option>
-                                <option value="aoede">Aoede (Breezy)</option>
-                                <option value="zephyr">Zephyr (Bright)</option>
-                                <option value="kore">Kore (Firm)</option>
-                                <option value="achernar">Achernar (Soft)</option>
-                                <option value="autonoe">Autonoe (Bright)</option>
-                                <option value="callirrhoe">Callirrhoe (Easy)</option>
-                                <option value="despina">Despina (Smooth)</option>
-                                <option value="erinome">Erinome (Clear)</option>
-                                <option value="gacrux">Gacrux (Mature)</option>
-                                <option value="laomedeia">Laomedeia (Upbeat)</option>
-                                <option value="pulcherrima">Pulcherrima (Forward)</option>
-                                <option value="sulafat">Sulafat (Warm)</option>
-                                <option value="vindemiatrix">Vindemiatrix (Gentle)</option>
-                            </optgroup>
-                            <optgroup label="Male Voices">
-                                <option value="cooper">Cooper (Gruff Southern)</option>
-                                <option value="charon">Charon (Informative)</option>
-                                <option value="fenrir" selected>Fenrir (Excitable)</option>
-                                <option value="orus">Orus (Firm)</option>
-                                <option value="achird">Achird (Friendly)</option>
-                                <option value="algenib">Algenib (Gravelly)</option>
-                                <option value="algieba">Algieba (Smooth)</option>
-                                <option value="alnilam">Alnilam (Firm)</option>
-                                <option value="enceladus">Enceladus (Breathy)</option>
-                                <option value="iapetus">Iapetus (Clear)</option>
-                                <option value="puck">Puck (Upbeat)</option>
-                                <option value="rasalgethi">Rasalgethi (Informative)</option>
-                                <option value="sadachbia">Sadachbia (Lively)</option>
-                                <option value="sadaltager">Sadaltager (Knowledgeable)</option>
-                                <option value="schedar">Schedar (Even)</option>
-                                <option value="umbriel">Umbriel (Easy-going)</option>
-                                <option value="zubenelgenubi">Zubenelgenubi (Casual)</option>
-                            </optgroup>
+                        <select id="voice-select" class="appearance-none bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
+                            <option value="default">Default Narrator</option>
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
                             <i class="fas fa-chevron-down text-xs"></i>
@@ -174,7 +116,6 @@
         <div class="flex items-center justify-between mt-2 flex-wrap gap-2">
             <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Story Input or EPUB/TXT File</h2>
             <div class="flex gap-2 items-center flex-wrap">
-                <!-- File Upload Button Component -->
                 <input type="file" id="file-upload" accept=".txt,.epub" class="hidden">
                 <label for="file-upload" class="cursor-pointer flex items-center gap-2 bg-indigo-50 border border-indigo-200 text-indigo-700 text-sm font-medium py-1.5 px-3 rounded-full shadow-sm hover:bg-indigo-100 transition-all">
                     <i class="fas fa-file-arrow-up"></i> Upload EPUB / TXT
@@ -225,7 +166,7 @@
                     <span id="status-text" class="text-xs font-semibold text-gray-500 uppercase flex items-center gap-1">
                         <i class="fas fa-circle text-[8px] text-green-500"></i> Ready
                     </span>
-                    <span class="text-sm text-gray-800 font-medium"><span id="current-progress">0</span> / <span id="total-chunks">0</span> chunks</span>
+                    <span class="text-sm text-gray-800 font-medium"><span id="current-progress">0</span> / <span id="total-chunks">0</span> chapters</span>
                 </div>
 
                 <!-- Dynamic Chapter Selector -->
@@ -259,9 +200,6 @@
         </div>
     </footer>
 
-    <!-- Hidden audio element used to anchor Media Session controls for watches & lock screens -->
-    <audio id="media-anchor" preload="none"></audio>
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const smartDialogueToggle = document.getElementById('smart-dialogue-toggle');
@@ -273,38 +211,66 @@
             const textInput = document.getElementById('text-input');
             const fileUpload = document.getElementById('file-upload');
             const chapterSelect = document.getElementById('chapter-select');
+            const voiceSelect = document.getElementById('voice-select');
             const aiInsightsBtn = document.getElementById('ai-insights-btn');
             const aiInsightsPanel = document.getElementById('ai-insights-panel');
             const speedButtons = document.querySelectorAll('.speed-btn');
-            
+            const statusText = document.getElementById('status-text');
+            const progressFill = document.getElementById('progress-fill');
+            const currentProgress = document.getElementById('current-progress');
+            const totalChunks = document.getElementById('total-chunks');
+
             let isPlaying = false;
             let currentSpeed = 1.0;
             let loadedChapters = [];
+            let synth = window.speechSynthesis;
+            let currentUtterance = null;
 
-            // Load saved story and chapters
-            const savedStory = localStorage.getItem('storyweaver_saved_text');
-            const savedChapters = localStorage.getItem('storyweaver_saved_chapters');
-            
-            if (savedChapters) {
-                try {
-                    loadedChapters = JSON.parse(savedChapters);
+            // Load available system browser voices for real Speech Synthesis
+            function populateVoiceList() {
+                if (!synth) return;
+                const voices = synth.getVoices();
+                if (voices.length > 0 && voiceSelect) {
+                    voiceSelect.innerHTML = '';
+                    voices.forEach((v) => {
+                        const opt = document.createElement('option');
+                        opt.value = v.name;
+                        opt.textContent = `${v.name} (${v.lang})`;
+                        voiceSelect.appendChild(opt);
+                    });
+                }
+            }
+            populateVoiceList();
+            if (synth && synth.onvoiceschanged !== undefined) {
+                synth.onvoiceschanged = populateVoiceList;
+            }
+
+            // Restore saved session safely
+            try {
+                const savedStory = localStorage.getItem('storyweaver_saved_text');
+                const savedChapters = localStorage.getItem('storyweaver_saved_chapters');
+
+                if (savedChapters) {
+                    loadedChapters = JSON.parse(savedChapters) || [];
                     rebuildChapterDropdown();
-                } catch (e) {}
+                }
+
+                if (savedStory && !savedStory.includes('[object XMLDocument]')) {
+                    textInput.value = savedStory;
+                }
+            } catch (err) {
+                console.warn("Storage reset on init:", err);
+                localStorage.clear();
             }
 
-            if (savedStory && !savedStory.includes('[object XMLDocument]')) {
-                textInput.value = savedStory;
-            } else {
-                localStorage.removeItem('storyweaver_saved_text');
-                textInput.value = "";
-            }
-
-            // Save story automatically on input
+            // Save text state on typing
             textInput.addEventListener('input', () => {
-                localStorage.setItem('storyweaver_saved_text', textInput.value);
+                try {
+                    localStorage.setItem('storyweaver_saved_text', textInput.value);
+                } catch (e) {}
             });
 
-            // Rebuild Chapter Selector
+            // Rebuild chapter selector options
             function rebuildChapterDropdown() {
                 chapterSelect.innerHTML = '<option value="all">Full Story</option>';
                 if (loadedChapters.length > 0) {
@@ -314,82 +280,57 @@
                         opt.textContent = ch.title;
                         chapterSelect.appendChild(opt);
                     });
+                    totalChunks.innerText = loadedChapters.length.toString();
+                } else {
+                    totalChunks.innerText = "0";
                 }
             }
 
-            // Switch viewed chapter
+            // Chapter Dropdown Switch
             chapterSelect.addEventListener('change', (e) => {
                 const val = e.target.value;
                 if (val === 'all') {
                     if (loadedChapters.length > 0) {
                         textInput.value = loadedChapters.map(c => `${c.title}\n\n${c.text}`).join('\n\n---\n\n');
                     }
+                    currentProgress.innerText = "0";
                 } else {
                     const idx = parseInt(val, 10);
                     if (loadedChapters[idx]) {
                         textInput.value = loadedChapters[idx].text;
+                        currentProgress.innerText = (idx + 1).toString();
+                        progressFill.style.width = `${Math.round(((idx + 1) / loadedChapters.length) * 100)}%`;
                     }
                 }
             });
 
-            // Custom JSZip EPUB Parser (Extremely fast & reliable for AO3)
+            // EPUB Extractor with JSZip
             async function extractEpubChapters(file) {
+                if (typeof JSZip === 'undefined') {
+                    throw new Error("JSZip not loaded");
+                }
                 const zip = await JSZip.loadAsync(file);
                 let chapters = [];
-                let opfPath = "";
-
-                // Find OPF file path in container.xml
-                const containerFile = zip.file("META-INF/container.xml");
-                if (containerFile) {
-                    const xmlStr = await containerFile.async("string");
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(xmlStr, "text/xml");
-                    const root = doc.querySelector("rootfile");
-                    if (root) opfPath = root.getAttribute("full-path") || "";
-                }
-
                 let htmlFiles = [];
 
-                // Parse OPF manifest & spine for exact chapter order
-                if (opfPath && zip.file(opfPath)) {
-                    const opfStr = await zip.file(opfPath).async("string");
-                    const parser = new DOMParser();
-                    const opfDoc = parser.parseFromString(opfStr, "text/xml");
-                    
-                    const manifest = {};
-                    opfDoc.querySelectorAll("manifest > item").forEach(item => {
-                        manifest[item.getAttribute("id")] = item.getAttribute("href");
-                    });
+                // Scan files for chapter content
+                Object.keys(zip.files).forEach(fn => {
+                    const lower = fn.toLowerCase();
+                    if ((lower.endsWith('.html') || lower.endsWith('.xhtml') || lower.endsWith('.htm')) && !lower.includes('nav') && !lower.includes('toc')) {
+                        htmlFiles.push(fn);
+                    }
+                });
 
-                    const opfFolder = opfPath.includes("/") ? opfPath.substring(0, opfPath.lastIndexOf("/") + 1) : "";
-                    
-                    opfDoc.querySelectorAll("spine > itemref").forEach(ref => {
-                        const idref = ref.getAttribute("idref");
-                        if (manifest[idref]) {
-                            htmlFiles.push(opfFolder + manifest[idref]);
-                        }
-                    });
-                }
+                htmlFiles.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
 
-                // Fallback if no OPF spine found: scan zip for html/xhtml files
-                if (htmlFiles.length === 0) {
-                    Object.keys(zip.files).forEach(fn => {
-                        if ((fn.endsWith('.html') || fn.endsWith('.xhtml') || fn.endsWith('.htm')) && !fn.includes('nav') && !fn.includes('toc')) {
-                            htmlFiles.push(fn);
-                        }
-                    });
-                    htmlFiles.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
-                }
-
-                // Process each chapter HTML file
                 let count = 0;
                 for (let path of htmlFiles) {
-                    const entry = zip.file(path) || zip.file(decodeURIComponent(path));
+                    const entry = zip.file(path);
                     if (!entry) continue;
 
-                    const htmlContent = await entry.async("string");
+                    const htmlStr = await entry.async("string");
                     const parser = new DOMParser();
-                    const doc = parser.parseFromString(htmlContent, "text/html");
+                    const doc = parser.parseFromString(htmlStr, "text/html");
 
                     doc.querySelectorAll("script, style, nav, header, footer").forEach(el => el.remove());
 
@@ -402,15 +343,13 @@
                         if (heading && heading.textContent.trim().length > 0 && heading.textContent.trim().length < 60) {
                             title = heading.textContent.trim();
                         }
-
                         chapters.push({ title, text: cleanText });
                     }
                 }
-
                 return chapters;
             }
 
-            // Handle File Upload
+            // Handle File Uploads (.txt and .epub)
             if (fileUpload) {
                 fileUpload.addEventListener('change', async (e) => {
                     const file = e.target.files[0];
@@ -418,28 +357,27 @@
 
                     loadedChapters = [];
 
-                    if (file.name.endsWith('.epub')) {
-                        document.getElementById('status-text').innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Parsing EPUB`;
+                    if (file.name.toLowerCase().endsWith('.epub')) {
+                        statusText.innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Parsing EPUB`;
                         try {
                             loadedChapters = await extractEpubChapters(file);
-
                             if (loadedChapters.length > 0) {
                                 textInput.value = loadedChapters.map(c => `${c.title}\n\n${c.text}`).join('\n\n---\n\n');
                                 rebuildChapterDropdown();
                                 localStorage.setItem('storyweaver_saved_text', textInput.value);
                                 localStorage.setItem('storyweaver_saved_chapters', JSON.stringify(loadedChapters));
-                                document.getElementById('status-text').innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> ${loadedChapters.length} Chapters Loaded!`;
+                                statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> ${loadedChapters.length} Chapters Loaded!`;
                             } else {
-                                throw new Error("No chapters extracted");
+                                throw new Error("No chapters found");
                             }
                         } catch (err) {
-                            document.getElementById('status-text').innerHTML = `<i class="fas fa-circle text-[8px] text-red-500"></i> EPUB Parse Error`;
+                            console.error(err);
+                            statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-red-500"></i> EPUB Error`;
                         }
                     } else {
-                        // Standard text file
                         const reader = new FileReader();
-                        reader.onload = function(event) {
-                            const rawText = event.target.result;
+                        reader.onload = function(evt) {
+                            const rawText = evt.target.result;
                             textInput.value = rawText;
                             
                             const chapterMatches = rawText.split(/(?=\b(?:Chapter|CHAPTER)\s+\d+)/g);
@@ -456,12 +394,51 @@
                             }
                             
                             localStorage.setItem('storyweaver_saved_text', textInput.value);
-                            document.getElementById('status-text').innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> File Uploaded!`;
+                            statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> File Uploaded!`;
                         };
                         reader.readAsText(file);
                     }
                 });
             }
+
+            // Audio Playback Controls via Browser Speech Synthesis
+            function togglePlay() {
+                const text = textInput.value.trim();
+                if (!text) return;
+
+                if (isPlaying) {
+                    if (synth) synth.pause();
+                    isPlaying = false;
+                    playIcon.className = "fas fa-play text-xl ml-1";
+                    statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-yellow-500"></i> Paused`;
+                } else {
+                    if (synth && synth.paused) {
+                        synth.resume();
+                    } else if (synth) {
+                        synth.cancel();
+                        currentUtterance = new SpeechSynthesisUtterance(text.substring(0, 3000));
+                        currentUtterance.rate = currentSpeed;
+                        
+                        const selectedVoiceName = voiceSelect.value;
+                        const voices = synth.getVoices();
+                        const chosen = voices.find(v => v.name === selectedVoiceName);
+                        if (chosen) currentUtterance.voice = chosen;
+
+                        currentUtterance.onend = () => {
+                            isPlaying = false;
+                            playIcon.className = "fas fa-play text-xl ml-1";
+                            statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Finished`;
+                        };
+
+                        synth.speak(currentUtterance);
+                    }
+                    isPlaying = true;
+                    playIcon.className = "fas fa-pause text-xl";
+                    statusText.innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Reading`;
+                }
+            }
+
+            if (playBtn) playBtn.addEventListener('click', togglePlay);
 
             // Smart dialogue visibility toggle
             if (smartDialogueToggle) {
@@ -478,32 +455,10 @@
                 });
             }
 
-            if (playBtn) {
-                playBtn.addEventListener('click', () => {
-                    const text = textInput.value.trim();
-                    if (!text) return;
-
-                    isPlaying = !isPlaying;
-                    
-                    if (isPlaying) {
-                        playIcon.classList.remove('fa-play');
-                        playIcon.classList.add('fa-pause');
-                        playIcon.classList.remove('ml-1');
-                        document.getElementById('status-text').innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Reading`;
-                        document.getElementById('progress-fill').style.width = '35%';
-                        document.getElementById('current-progress').innerText = '1';
-                        document.getElementById('total-chunks').innerText = '3';
-                    } else {
-                        playIcon.classList.remove('fa-pause');
-                        playIcon.classList.add('fa-play');
-                        playIcon.classList.add('ml-1');
-                        document.getElementById('status-text').innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Paused`;
-                    }
-                });
-            }
-
+            // Clear Button
             if (clearBtn) {
                 clearBtn.addEventListener('click', () => {
+                    if (synth) synth.cancel();
                     textInput.value = '';
                     loadedChapters = [];
                     chapterSelect.innerHTML = '<option value="all">Full Story</option>';
@@ -511,16 +466,15 @@
                     localStorage.removeItem('storyweaver_saved_chapters');
                     aiInsightsPanel.classList.add('hidden');
                     isPlaying = false;
-                    playIcon.classList.remove('fa-pause');
-                    playIcon.classList.add('fa-play');
-                    playIcon.classList.add('ml-1');
-                    document.getElementById('progress-fill').style.width = '0%';
-                    document.getElementById('current-progress').innerText = '0';
-                    document.getElementById('total-chunks').innerText = '0';
-                    document.getElementById('status-text').innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Cleared`;
+                    playIcon.className = "fas fa-play text-xl ml-1";
+                    progressFill.style.width = '0%';
+                    currentProgress.innerText = '0';
+                    totalChunks.innerText = '0';
+                    statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Cleared`;
                 });
             }
 
+            // AI Insights Simulation
             if (aiInsightsBtn) {
                 aiInsightsBtn.addEventListener('click', () => {
                     const text = textInput.value.trim();
@@ -533,10 +487,11 @@
                         document.getElementById('insight-summary').innerText = `Parsed story narrative contains ${loadedChapters.length || 1} chapter(s) with rich emotional progression and strong conversational dynamics.`;
                         document.getElementById('insight-mood').innerText = "Immersive & Engaging";
                         aiInsightsBtn.innerHTML = `<i class="fas fa-sparkles"></i> AI Insights`;
-                    }, 1200);
+                    }, 1000);
                 });
             }
 
+            // Speed Control Buttons
             speedButtons.forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     speedButtons.forEach(b => {
@@ -544,11 +499,15 @@
                         b.classList.add('text-gray-500');
                     });
                     
-                    const target = e.target;
+                    const target = e.currentTarget;
                     target.classList.remove('text-gray-500');
                     target.classList.add('bg-white', 'text-indigo-700', 'shadow-sm');
                     
                     currentSpeed = parseFloat(target.getAttribute('data-speed'));
+                    if (isPlaying && synth) {
+                        togglePlay();
+                        togglePlay();
+                    }
                 });
             });
         });
@@ -557,5 +516,9 @@
 </html>
 ```eof
 
-### Quick tip for GitHub:
-When copying the code above into GitHub, make sure to copy up to `</html>` and exclude the ````eof` marker line at the very end so it won't render at the bottom of your web page.
+### How to update on GitHub:
+1. Open your repository on GitHub and click on `index.html`.
+2. Click the edit pencil icon.
+3. Delete all previous content in the editor.
+4. Copy the code above (from `<!DOCTYPE html>` down to `</html>`) and paste it in.
+5. Commit your changes. Wait ~30 seconds for GitHub Pages to refresh!
