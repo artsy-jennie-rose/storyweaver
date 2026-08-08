@@ -5,24 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StoryWeaver - AI Audio Reader</title>
     <!-- Load Tailwind CSS -->
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Load Font Awesome Icons -->
-    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap)');
-        body { font-family: 'Inter', sans-serif; }
-        
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; color: #1f2937; margin: 0; padding: 0; }
         textarea::-webkit-scrollbar { width: 8px; }
         textarea::-webkit-scrollbar-track { background: #f8fafc; border-radius: 4px; }
         textarea::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         textarea::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
         .toggle-checkbox:checked { right: 0; border-color: #6366f1; }
         .toggle-checkbox:checked + .toggle-label { background-color: #6366f1; }
         .toggle-checkbox { right: 0; z-index: 1; border-color: #e2e8f0; transition: all 0.3s; }
         .toggle-label { transition: all 0.3s; }
-        
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-5px); }
@@ -30,9 +26,9 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col text-gray-800">
+<body class="min-h-screen flex flex-col justify-between">
 
-    <!-- App Header -->
+    <!-- Header Section -->
     <header class="bg-white shadow-sm border-b border-gray-200 py-4 px-6 sticky top-0 z-20">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             
@@ -44,10 +40,8 @@
                 <h1 class="text-xl font-bold text-gray-900 tracking-tight">StoryWeaver</h1>
             </div>
 
-            <!-- Voice Controls & Smart Toggle -->
+            <!-- Controls -->
             <div class="flex flex-wrap items-center justify-center gap-4 bg-gray-50 p-2 rounded-xl border border-gray-200">
-                
-                <!-- Smart Voices Toggle -->
                 <div class="flex items-center gap-2 pr-4 border-r border-gray-200">
                     <span class="text-sm font-medium text-gray-600">Smart Voices</span>
                     <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
@@ -56,67 +50,29 @@
                     </div>
                 </div>
 
-                <!-- Dialogue Voice Pickers -->
-                <div id="smart-voice-options" class="hidden items-center gap-3 fade-in flex-wrap">
-                    <div class="flex items-center gap-1">
-                        <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">Male</span>
-                        <div class="relative">
-                            <select id="smart-male-voice" class="appearance-none bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
-                                <option value="cooper">Cooper (Gruff Southern)</option>
-                                <option value="fenrir" selected>Fenrir (Excitable)</option>
-                                <option value="charon">Charon (Informative)</option>
-                                <option value="orus">Orus (Firm)</option>
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-blue-600">
-                                <i class="fas fa-chevron-down text-xs"></i>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center gap-1">
-                        <span class="text-xs font-semibold text-pink-600 uppercase tracking-wide">Female</span>
-                        <div class="relative">
-                            <select id="smart-female-voice" class="appearance-none bg-pink-50 border border-pink-200 text-pink-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
-                                <option value="leda" selected>Lucy (Bright & Earnest)</option>
-                                <option value="aoede">Aoede (Breezy)</option>
-                                <option value="zephyr">Zephyr (Bright)</option>
-                                <option value="kore">Kore (Firm)</option>
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-pink-600">
-                                <i class="fas fa-chevron-down text-xs"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="h-6 w-px bg-gray-300 hidden sm:block"></div>
-                </div>
-
-                <!-- Main Narrator Voice -->
-                <div class="flex items-center gap-1">
-                    <span id="narrator-label" class="hidden text-xs font-semibold text-gray-500 uppercase tracking-wide fade-in">Narrator</span>
+                <div class="flex items-center gap-2">
+                    <span id="narrator-label" class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Voice</span>
                     <div class="relative">
                         <select id="voice-select" class="appearance-none bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
-                            <option value="default">Default Narrator</option>
+                            <option value="default">Default Voice</option>
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
                             <i class="fas fa-chevron-down text-xs"></i>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </header>
 
-    <!-- Main Workspace -->
+    <!-- Main Section -->
     <main class="flex-grow max-w-4xl w-full mx-auto p-4 md:p-6 flex flex-col gap-4">
-        
-        <!-- Action Bar -->
         <div class="flex items-center justify-between mt-2 flex-wrap gap-2">
             <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Story Text / EPUB File</h2>
             <div class="flex gap-2 items-center flex-wrap">
                 <input type="file" id="file-upload" accept=".txt,.epub" class="hidden">
                 <label for="file-upload" class="cursor-pointer flex items-center gap-2 bg-indigo-50 border border-indigo-200 text-indigo-700 text-sm font-medium py-1.5 px-3 rounded-full shadow-sm hover:bg-indigo-100 transition-all">
-                    <i class="fas fa-file-arrow-up"></i> Upload File (.txt / .epub)
+                    <i class="fas fa-file-arrow-up"></i> Upload EPUB / TXT
                 </label>
                 <button id="ai-insights-btn" class="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-sm font-medium py-1.5 px-4 rounded-full shadow hover:shadow-md hover:from-purple-600 hover:to-indigo-600 transition-all">
                     <i class="fas fa-sparkles"></i> AI Insights
@@ -127,7 +83,6 @@
             </div>
         </div>
 
-        <!-- AI Insights Panel -->
         <div id="ai-insights-panel" class="hidden bg-white border border-indigo-100 rounded-xl shadow-sm p-5 fade-in">
             <h3 class="text-lg font-bold text-indigo-900 mb-3 flex items-center gap-2">
                 <i class="fas fa-magic text-indigo-500"></i> AI Analysis
@@ -144,22 +99,17 @@
             </div>
         </div>
 
-        <!-- Story Input Box -->
         <div class="flex-grow bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col min-h-[350px]">
             <textarea id="text-input" class="w-full flex-grow p-5 resize-none outline-none text-gray-700 text-lg leading-relaxed placeholder-gray-400 min-h-[300px]" placeholder="Upload an AO3 .epub file, a Google Doc .txt file, or type/paste your story here..."></textarea>
         </div>
     </main>
 
-    <!-- Bottom Audio Controls -->
+    <!-- Player Controls -->
     <footer class="bg-white border-t border-gray-200 sticky bottom-0 z-20 pb-safe">
-        <!-- Progress Bar -->
         <div class="w-full bg-gray-200 h-1.5">
             <div id="progress-fill" class="bg-indigo-600 h-1.5 w-0 transition-all duration-300"></div>
         </div>
-        
         <div class="max-w-4xl mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-4">
-            
-            <!-- Status & Chapter Dropdown -->
             <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
                 <div class="flex flex-col">
                     <span id="status-text" class="text-xs font-semibold text-gray-500 uppercase flex items-center gap-1">
@@ -167,8 +117,6 @@
                     </span>
                     <span class="text-sm text-gray-800 font-medium"><span id="current-progress">0</span> / <span id="total-chunks">0</span> chapters</span>
                 </div>
-
-                <!-- Chapter Selector Dropdown -->
                 <div class="relative">
                     <select id="chapter-select" class="appearance-none bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-44 py-2 pl-3 pr-8 cursor-pointer outline-none">
                         <option value="all">Full Story</option>
@@ -178,15 +126,10 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Play Controls -->
             <div class="flex items-center gap-6">
-                <!-- Play/Pause Button -->
                 <button id="play-btn" class="w-14 h-14 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all transform hover:scale-105 active:scale-95">
                     <i id="play-icon" class="fas fa-play text-xl ml-1"></i>
                 </button>
-
-                <!-- Playback Speed Controls -->
                 <div class="flex bg-gray-100 rounded-lg p-1 border border-gray-200">
                     <button class="speed-btn px-3 py-1 text-xs font-medium text-gray-500 rounded-md hover:bg-white hover:text-gray-900 transition-colors" data-speed="0.75">0.75x</button>
                     <button class="speed-btn px-3 py-1 text-xs font-medium bg-white text-indigo-700 shadow-sm rounded-md transition-colors" data-speed="1.0">1x</button>
@@ -195,19 +138,14 @@
                     <button class="speed-btn px-3 py-1 text-xs font-medium text-gray-500 rounded-md hover:bg-white hover:text-gray-900 transition-colors" data-speed="2.0">2x</button>
                 </div>
             </div>
-
         </div>
     </footer>
 
-    <!-- Load JSZip for EPUB support -->
-    <script src="[https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js](https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js)"></script>
+    <!-- Load JSZip for EPUB parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
-    <!-- App Logic -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const smartDialogueToggle = document.getElementById('smart-dialogue-toggle');
-            const smartVoiceOptions = document.getElementById('smart-voice-options');
-            const narratorLabel = document.getElementById('narrator-label');
             const playBtn = document.getElementById('play-btn');
             const playIcon = document.getElementById('play-icon');
             const clearBtn = document.getElementById('clear-btn');
@@ -228,7 +166,6 @@
             let loadedChapters = [];
             let synth = window.speechSynthesis;
 
-            // Load Browser Voices
             function loadVoices() {
                 if (!synth) return;
                 const voices = synth.getVoices();
@@ -247,7 +184,6 @@
                 synth.onvoiceschanged = loadVoices;
             }
 
-            // Restore Saved Story
             try {
                 const savedText = localStorage.getItem('sw_text');
                 const savedChaps = localStorage.getItem('sw_chaps');
@@ -262,12 +198,10 @@
                 localStorage.clear();
             }
 
-            // Save on Input
             textInput.addEventListener('input', () => {
                 try { localStorage.setItem('sw_text', textInput.value); } catch(e){}
             });
 
-            // Update Chapter Select
             function updateChapterDropdown() {
                 chapterSelect.innerHTML = '<option value="all">Full Story</option>';
                 if (loadedChapters.length > 0) {
@@ -283,7 +217,6 @@
                 }
             }
 
-            // Chapter Change
             chapterSelect.addEventListener('change', (e) => {
                 const val = e.target.value;
                 if (val === 'all') {
@@ -302,7 +235,6 @@
                 }
             });
 
-            // EPUB Chapter Parser
             async function extractEpubChapters(file) {
                 if (typeof JSZip === 'undefined') throw new Error("JSZip not ready");
                 const zip = await JSZip.loadAsync(file);
@@ -341,7 +273,6 @@
                 return chapters;
             }
 
-            // File Upload Event
             if (fileUpload) {
                 fileUpload.addEventListener('change', async (e) => {
                     const file = e.target.files[0];
@@ -387,7 +318,6 @@
                 });
             }
 
-            // Speech Synthesis Playback
             if (playBtn) {
                 playBtn.addEventListener('click', () => {
                     const txt = textInput.value.trim();
@@ -420,72 +350,3 @@
                         playIcon.className = "fas fa-pause text-xl";
                         statusText.innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Reading`;
                     }
-                });
-            }
-
-            // Clear Button
-            if (clearBtn) {
-                clearBtn.addEventListener('click', () => {
-                    if (synth) synth.cancel();
-                    textInput.value = '';
-                    loadedChapters = [];
-                    chapterSelect.innerHTML = '<option value="all">Full Story</option>';
-                    localStorage.removeItem('sw_text');
-                    localStorage.removeItem('sw_chaps');
-                    aiInsightsPanel.classList.add('hidden');
-                    isPlaying = false;
-                    playIcon.className = "fas fa-play text-xl ml-1";
-                    progressFill.style.width = '0%';
-                    currentProgress.innerText = '0';
-                    totalChunks.innerText = '0';
-                    statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Cleared`;
-                });
-            }
-
-            // AI Insights Button
-            if (aiInsightsBtn) {
-                aiInsightsBtn.addEventListener('click', () => {
-                    if (!textInput.value.trim()) return;
-                    aiInsightsBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Analyzing...`;
-                    setTimeout(() => {
-                        aiInsightsPanel.classList.remove('hidden');
-                        document.getElementById('insight-summary').innerText = `Story text contains ${loadedChapters.length || 1} chapter(s) with rich narrative structure and clear dialogue formatting.`;
-                        document.getElementById('insight-mood').innerText = "Immersive & Engaging";
-                        aiInsightsBtn.innerHTML = `<i class="fas fa-sparkles"></i> AI Insights`;
-                    }, 800);
-                });
-            }
-
-            // Smart Dialogue Toggle
-            if (smartDialogueToggle) {
-                smartDialogueToggle.addEventListener('change', (e) => {
-                    if (e.target.checked) {
-                        smartVoiceOptions.classList.remove('hidden');
-                        smartVoiceOptions.classList.add('flex');
-                        narratorLabel.classList.remove('hidden');
-                    } else {
-                        smartVoiceOptions.classList.add('hidden');
-                        smartVoiceOptions.classList.remove('flex');
-                        narratorLabel.classList.add('hidden');
-                    }
-                });
-            }
-
-            // Speed Control Buttons
-            speedButtons.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    speedButtons.forEach(b => {
-                        b.classList.remove('bg-white', 'text-indigo-700', 'shadow-sm');
-                        b.classList.add('text-gray-500');
-                    });
-                    const t = e.currentTarget;
-                    t.classList.remove('text-gray-500');
-                    t.classList.add('bg-white', 'text-indigo-700', 'shadow-sm');
-                    currentSpeed = parseFloat(t.getAttribute('data-speed'));
-                });
-            });
-        });
-    </script>
-</body>
-</html>
-
