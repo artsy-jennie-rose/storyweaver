@@ -662,6 +662,10 @@
                     return;
                 }
 
+                // Fixed base offset for THIS utterance only — onboundary must not
+                // accumulate on top of an already-updated currentWordIndex.
+                let utteranceStartIndex = currentWordIndex;
+
                 let utter = new SpeechSynthesisUtterance(spokenText);
                 utter.rate = currentSpeed;
                 
@@ -690,7 +694,8 @@
 
                 utter.onboundary = (e) => {
                     if (e.name !== 'word') return;
-                    currentWordIndex = currentWordIndex + e.charIndex;
+                    // Set (not accumulate) from the fixed utterance start offset.
+                    currentWordIndex = utteranceStartIndex + e.charIndex;
                 };
 
                 utter.onend = () => {
@@ -840,4 +845,3 @@
     </script>
 </body>
 </html>
-```eof
