@@ -48,7 +48,7 @@
 
                 <div id="smart-voice-options" style="display: none;" class="items-center gap-3 fade-in flex-wrap">
                     <div class="flex items-center gap-1">
-                        <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">Male (Dialogue)</span>
+                        <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">Male</span>
                         <div class="relative">
                             <select id="smart-male-voice" class="appearance-none bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
                                 <option value="default">Loading Voices...</option>
@@ -60,7 +60,7 @@
                     </div>
                     
                     <div class="flex items-center gap-1">
-                        <span class="text-xs font-semibold text-pink-600 uppercase tracking-wide">Female (Dialogue)</span>
+                        <span class="text-xs font-semibold text-pink-600 uppercase tracking-wide">Female</span>
                         <div class="relative">
                             <select id="smart-female-voice" class="appearance-none bg-pink-50 border border-pink-200 text-pink-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
                                 <option value="default">Loading Voices...</option>
@@ -85,7 +85,6 @@
                     </div>
                 </div>
 
-                <!-- Voice Tuning Button -->
                 <button id="tuning-btn" class="ml-1 w-8 h-8 rounded-full bg-white border border-gray-300 text-gray-500 flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 shadow-sm transition-all" title="Voice Tuning">
                     <i class="fas fa-sliders-h text-sm"></i>
                 </button>
@@ -181,7 +180,6 @@
             <div class="p-6 space-y-5">
                 <p class="text-xs text-gray-500 mb-4">Adjust the pitch of voices to make them deeper (lower) or higher (higher).</p>
                 
-                <!-- Narrator Pitch -->
                 <div class="space-y-1">
                     <div class="flex justify-between items-center">
                         <label class="text-sm font-semibold text-gray-700">Narrator Pitch</label>
@@ -190,7 +188,6 @@
                     <input type="range" id="pitch-narrator" min="0.1" max="2.0" step="0.1" value="1.0" class="w-full cursor-pointer">
                 </div>
 
-                <!-- Male Pitch -->
                 <div class="space-y-1">
                     <div class="flex justify-between items-center">
                         <label class="text-sm font-semibold text-blue-700">Male Dialogue Pitch</label>
@@ -199,7 +196,6 @@
                     <input type="range" id="pitch-male" min="0.1" max="2.0" step="0.1" value="1.0" class="w-full cursor-pointer">
                 </div>
 
-                <!-- Female Pitch -->
                 <div class="space-y-1">
                     <div class="flex justify-between items-center">
                         <label class="text-sm font-semibold text-pink-700">Female Dialogue Pitch</label>
@@ -241,7 +237,6 @@
             const smartVoiceOptions = document.getElementById('smart-voice-options');
             const narratorLabel = document.getElementById('narrator-label');
 
-            // Tuning elements
             const tuningBtn = document.getElementById('tuning-btn');
             const tuningModal = document.getElementById('tuning-modal');
             const closeTuningBtn = document.getElementById('close-tuning-btn');
@@ -267,10 +262,9 @@
             let currentSegmentIndex = 0;
             let currentWordIndexInSegment = 0;
 
-            // Pitch Variables
             let pNarrator = 1.0;
-            let pMale = 0.85; // Default slightly lower for gruff male
-            let pFemale = 1.15; // Default slightly higher for optimistic female
+            let pMale = 0.85; 
+            let pFemale = 1.15; 
 
             function loadVoices() {
                 if (!synth) return;
@@ -280,7 +274,6 @@
                     smartMaleVoiceSelect.innerHTML = '';
                     smartFemaleVoiceSelect.innerHTML = '';
                     
-                    // Filter exclusively for English voices and filter out novelty voices
                     let voices = rawVoices.filter(v => {
                         let l = v.lang.toLowerCase();
                         let n = v.name.toLowerCase();
@@ -302,7 +295,7 @@
                     voices.forEach((item) => {
                         let v = item.voice;
                         let n = v.name.toLowerCase();
-                        let vNameStr = `${v.name} (${v.lang})${item.score >= 100 ? ' ✨' : ''}`;
+                        let vNameStr = `${v.name} (${v.lang})`;
                         
                         const opt1 = document.createElement('option');
                         opt1.value = v.name; opt1.textContent = vNameStr;
@@ -362,7 +355,6 @@
                 fullPlaybackReset();
             });
 
-            // Tuning Modal Logic
             function openTuning() { tuningModal.classList.remove('hidden'); tuningModal.classList.add('flex'); }
             function closeTuning() { tuningModal.classList.add('hidden'); tuningModal.classList.remove('flex'); }
             
@@ -665,12 +657,14 @@
 
                     if (isPlaying) {
                         if (isPaused) {
+                            // Resume from saved character offset
                             isPaused = false;
                             textInput.readOnly = true; 
                             playIcon.className = "fas fa-pause text-xl";
                             statusText.innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Reading`;
                             speakNextUtterance();
                         } else {
+                            // Pause and save exact position
                             cancelForInterrupt = true;
                             synth.cancel();
                             isPaused = true;
@@ -679,6 +673,7 @@
                             statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-yellow-500"></i> Paused`;
                         }
                     } else {
+                        // Brand new start
                         fullPlaybackReset();
                         isPlaying = true;
                         textInput.readOnly = true; 
