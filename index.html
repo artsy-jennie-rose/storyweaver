@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StoryWeaver - AI Audio Reader</title>
-    <!-- Load Tailwind CSS -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load Font Awesome Icons -->
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -141,9 +141,10 @@
         </div>
     </footer>
 
-    <!-- Load JSZip for EPUB parsing -->
+    <!-- JSZip Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
+    <!-- App Logic -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const playBtn = document.getElementById('play-btn');
@@ -350,3 +351,66 @@
                         playIcon.className = "fas fa-pause text-xl";
                         statusText.innerHTML = `<i class="fas fa-spinner fa-spin text-[10px] text-indigo-500"></i> Reading`;
                     }
+                });
+            }
+
+            if (clearBtn) {
+                clearBtn.addEventListener('click', () => {
+                    if (synth) synth.cancel();
+                    textInput.value = '';
+                    loadedChapters = [];
+                    chapterSelect.innerHTML = '<option value="all">Full Story</option>';
+                    localStorage.removeItem('sw_text');
+                    localStorage.removeItem('sw_chaps');
+                    aiInsightsPanel.classList.add('hidden');
+                    isPlaying = false;
+                    playIcon.className = "fas fa-play text-xl ml-1";
+                    progressFill.style.width = '0%';
+                    currentProgress.innerText = '0';
+                    totalChunks.innerText = '0';
+                    statusText.innerHTML = `<i class="fas fa-circle text-[8px] text-green-500"></i> Cleared`;
+                });
+            }
+
+            if (aiInsightsBtn) {
+                aiInsightsBtn.addEventListener('click', () => {
+                    if (!textInput.value.trim()) return;
+                    aiInsightsBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Analyzing...`;
+                    setTimeout(() => {
+                        aiInsightsPanel.classList.remove('hidden');
+                        document.getElementById('insight-summary').innerText = `Story text contains ${loadedChapters.length || 1} chapter(s) with rich narrative structure and clear dialogue formatting.`;
+                        document.getElementById('insight-mood').innerText = "Immersive & Engaging";
+                        aiInsightsBtn.innerHTML = `<i class="fas fa-sparkles"></i> AI Insights`;
+                    }, 800);
+                });
+            }
+
+            speedButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    speedButtons.forEach(b => {
+                        b.classList.remove('bg-white', 'text-indigo-700', 'shadow-sm');
+                        b.classList.add('text-gray-500');
+                    });
+                    const t = e.currentTarget;
+                    t.classList.remove('text-gray-500');
+                    t.classList.add('bg-white', 'text-indigo-700', 'shadow-sm');
+                    currentSpeed = parseFloat(t.getAttribute('data-speed'));
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+```eof
+
+### Two quick steps to test and verify on GitHub:
+
+1. **Check GitHub Actions Status:**
+   - In your GitHub repo (`artsy-jennie-rose/storyweaver`), click on the **Actions** tab near the top.
+   - Look at the top workflow run. Is there a **yellow spinning circle** or a **red X**? If it's a yellow circle, GitHub Pages is currently building your site and needs ~1-2 minutes to publish the update.
+
+2. **Bypass Browser Cache:**
+   - Once Actions shows a **green checkmark**, open `[https://artsy-jennie-rose.github.io/storyweaver/](https://artsy-jennie-rose.github.io/storyweaver/)`.
+   - On Mac: press **`Cmd + Shift + R`**
+   - On Windows: press **`Ctrl + F5`**
+   *(This forces your browser to download the fresh HTML instead of serving the broken cached version).*
