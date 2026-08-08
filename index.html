@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StoryWeaver - AI Audio Reader</title>
     <!-- Load Tailwind CSS -->
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Load Font Awesome Icons -->
-    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap)');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; color: #1f2937; margin: 0; padding: 0; }
         textarea::-webkit-scrollbar { width: 8px; }
         textarea::-webkit-scrollbar-track { background: #f8fafc; border-radius: 4px; }
@@ -28,11 +28,9 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between">
 
-    <!-- Header Section -->
     <header class="bg-white shadow-sm border-b border-gray-200 py-4 px-6 sticky top-0 z-20">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             
-            <!-- Logo -->
             <div class="flex items-center gap-2">
                 <div class="bg-indigo-600 text-white p-2 rounded-lg flex items-center justify-center shadow-sm">
                     <i class="fas fa-book-open"></i>
@@ -40,7 +38,6 @@
                 <h1 class="text-xl font-bold text-gray-900 tracking-tight">StoryWeaver</h1>
             </div>
 
-            <!-- Controls -->
             <div class="flex flex-wrap items-center justify-center gap-4 bg-gray-50 p-2 rounded-xl border border-gray-200">
                 <div class="flex items-center gap-2 pr-4 border-r border-gray-200">
                     <span class="text-sm font-medium text-gray-600">Smart Voices</span>
@@ -48,6 +45,39 @@
                         <input type="checkbox" name="toggle" id="smart-dialogue-toggle" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
                         <label for="smart-dialogue-toggle" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"></label>
                     </div>
+                </div>
+
+                <div id="smart-voice-options" style="display: none;" class="items-center gap-3 fade-in flex-wrap">
+                    <div class="flex items-center gap-1">
+                        <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">Male</span>
+                        <div class="relative">
+                            <select id="smart-male-voice" class="appearance-none bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
+                                <option value="cooper">Cooper (Gruff Southern)</option>
+                                <option value="fenrir" selected>Fenrir (Excitable)</option>
+                                <option value="charon">Charon (Informative)</option>
+                                <option value="orus">Orus (Firm)</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-blue-600">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-1">
+                        <span class="text-xs font-semibold text-pink-600 uppercase tracking-wide">Female</span>
+                        <div class="relative">
+                            <select id="smart-female-voice" class="appearance-none bg-pink-50 border border-pink-200 text-pink-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-48 py-2 pl-3 pr-8 cursor-pointer shadow-sm outline-none">
+                                <option value="leda" selected>Lucy (Bright & Earnest)</option>
+                                <option value="aoede">Aoede (Breezy)</option>
+                                <option value="zephyr">Zephyr (Bright)</option>
+                                <option value="kore">Kore (Firm)</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-pink-600">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="h-6 w-px bg-gray-300 hidden sm:block"></div>
                 </div>
 
                 <div class="flex items-center gap-2">
@@ -65,7 +95,6 @@
         </div>
     </header>
 
-    <!-- Main Section -->
     <main class="flex-grow max-w-4xl w-full mx-auto p-4 md:p-6 flex flex-col gap-4">
         <div class="flex items-center justify-between mt-2 flex-wrap gap-2">
             <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Story Text / EPUB File</h2>
@@ -104,7 +133,6 @@
         </div>
     </main>
 
-    <!-- Player Controls -->
     <footer class="bg-white border-t border-gray-200 sticky bottom-0 z-20 pb-safe">
         <div class="w-full bg-gray-200 h-1.5">
             <div id="progress-fill" class="bg-indigo-600 h-1.5 w-0 transition-all duration-300"></div>
@@ -141,8 +169,7 @@
         </div>
     </footer>
 
-    <!-- Load JSZip for EPUB parsing -->
-    <script src="[https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js](https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js)"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -160,6 +187,9 @@
             const currentProgress = document.getElementById('current-progress');
             const totalChunks = document.getElementById('total-chunks');
             const progressFill = document.getElementById('progress-fill');
+            const smartDialogueToggle = document.getElementById('smart-dialogue-toggle');
+            const smartVoiceOptions = document.getElementById('smart-voice-options');
+            const narratorLabel = document.getElementById('narrator-label');
 
             let isPlaying = false;
             let currentSpeed = 1.0;
@@ -384,6 +414,18 @@
                 });
             }
 
+            if (smartDialogueToggle) {
+                smartDialogueToggle.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        smartVoiceOptions.style.display = 'flex';
+                        narratorLabel.innerText = "Narrator";
+                    } else {
+                        smartVoiceOptions.style.display = 'none';
+                        narratorLabel.innerText = "Voice";
+                    }
+                });
+            }
+
             speedButtons.forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     speedButtons.forEach(b => {
@@ -401,10 +443,3 @@
 </body>
 </html>
 ```eof
-
-### Important Step on GitHub:
-1. Open `https://github.com/artsy-jennie-rose/storyweaver/blob/main/index.html` on GitHub.
-2. Click the **Pencil icon** (Edit file).
-3. Press **`Ctrl + A`** (or `Cmd + A` on Mac) to select every single line in the GitHub editor window, then hit **`Delete`**. *(This ensures that line 300+ with the extra text gets completely erased!)*
-4. Click the **Copy button** in the top-right corner of the code block above.
-5. Paste it into GitHub and click **Commit changes...**.
